@@ -23,7 +23,6 @@
 
             <el-menu-item index="/dashboard/inventaris/daftar">Daftar Inventaris</el-menu-item>
             <el-menu-item index="/dashboard/inventaris/peminjaman">Peminjaman</el-menu-item>
-            <el-menu-item index="/dashboard/inventaris/pengembalian">Pengembalian</el-menu-item>
             </el-sub-menu>
         </el-menu>
       </el-scrollbar>

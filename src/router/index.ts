@@ -21,14 +21,44 @@ const routes: Array<RouteRecordRaw> = [
     component: Dashboard,
     children: [
       {
-        path: 'tubes/penilaian',
-        name: 'PenilaianTubes',
-        component: () => import('../views/tubes/FormPenilaian.vue')
+        path: 'tubes',
+        children: [
+          {
+            path: 'penilaian',
+            name: 'PenilaianTubes',
+            component: () => import('../views/tubes/FormPenilaian.vue')
+          },
+          {
+            path: 'rekap',
+            name: 'RekapPenilaian',
+            component: () => import('../views/tubes/RekapPenilaian.vue')
+          }
+        ]
       },
       {
-        path: 'tubes/rekap',
-        name: 'RekapPenilaian',
-        component: () => import('../views/tubes/RekapPenilaian.vue')
+        path: 'inventaris',
+        children: [
+          {
+            path: 'daftar',
+            name: 'ListInventaris',
+            component: () => import('../views/inventaris/ListInventaris.vue')
+          },
+          {
+            path: 'tambah',
+            name: 'TambahInventaris',
+            component: () => import('../views/inventaris/FormPenambahan.vue')
+          },
+          {
+            path: 'peminjaman',
+            name: 'Peminjaman',
+            component: () => import('../views/inventaris/ListPeminjaman.vue')
+          },
+          {
+            path: 'pinjam',
+            name: 'Pinjam',
+            component: () => import('../views/inventaris/FormPeminjaman.vue')
+          }
+        ]
       }
     ]
   }
