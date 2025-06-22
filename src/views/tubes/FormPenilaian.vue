@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-3 mb-8">
+  <el-card>
     <el-descriptions :column="1" border>
       <el-descriptions-item label="Angkatan">
         <el-radio-group v-model="informasiKelompok.angkatan" size="small" @change="mulaiGantiInformasi">
@@ -50,16 +50,15 @@
         </el-link>
       </el-descriptions-item>
     </el-descriptions>
-  </div>
+  </el-card>
 
-  <div class="my-6" v-show="!informasiSedangDiganti">
+  <el-card class="my-6" v-show="!informasiSedangDiganti">
     <FormNilaiKelompok></FormNilaiKelompok>
-  </div>
+  </el-card>
 
-  <div class="my-6" v-show="!informasiSedangDiganti">
-    <FormNilaiPerorangan :informasiKelompok="informasiKelompok"></FormNilaiPerorangan>
-  </div>
-
+  <el-card class="my-6" v-show="!informasiSedangDiganti">
+    <FormNilaiPerorangan></FormNilaiPerorangan>
+  </el-card>
 
   <el-dialog
     title="Pilih Kelompok"

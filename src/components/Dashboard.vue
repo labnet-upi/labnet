@@ -5,25 +5,28 @@
         <el-menu :default-openeds="['1', '2']" router>
             <!-- Tubes -->
             <el-sub-menu index="1">
-            <template #title>
-                <el-icon><document /></el-icon>
-                Tubes
-            </template>
+              <template #title>
+                  <el-icon><document /></el-icon>
+                  Tubes
+              </template>
 
-            <el-menu-item index="/dashboard/tubes/penilaian">Penilaian</el-menu-item>
-            <el-menu-item index="/dashboard/tubes/rekap">Rekap</el-menu-item>
+              <el-menu-item index="/dashboard/tubes/penilaian">Susun Aspek</el-menu-item>
+              <el-menu-item index="/dashboard/tubes/penilaian">Penilaian</el-menu-item>
+              <el-menu-item index="/dashboard/tubes/rekap">Rekap</el-menu-item>
             </el-sub-menu>
 
             <!-- Inventaris -->
             <el-sub-menu index="2">
-            <template #title>
-                <el-icon><folder /></el-icon>
-                Inventaris
-            </template>
+              <template #title>
+                  <el-icon><folder /></el-icon>
+                  Inventaris
+              </template>
 
-            <el-menu-item index="/dashboard/inventaris/daftar">Daftar Inventaris</el-menu-item>
-            <el-menu-item index="/dashboard/inventaris/peminjaman">Peminjaman</el-menu-item>
+              <el-menu-item index="/dashboard/inventaris/daftar">Daftar Inventaris</el-menu-item>
+              <el-menu-item index="/dashboard/inventaris/peminjaman">Peminjaman</el-menu-item>
             </el-sub-menu>
+
+            <el-menu-item index="/dashboard/pengguna"><el-icon><User /></el-icon>Pengguna</el-menu-item>
         </el-menu>
       </el-scrollbar>
     </el-aside>
@@ -31,27 +34,24 @@
     <el-container>
       <el-header style="text-align: right; font-size: 12px">
         <div class="toolbar">
-          <el-dropdown>
+          <el-dropdown @command="handleDropdownCommand">
             <el-icon style="margin-right: 8px; margin-top: 1px">
               <setting />
             </el-icon>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>View</el-dropdown-item>
-                <el-dropdown-item>Add</el-dropdown-item>
-                <el-dropdown-item>Delete</el-dropdown-item>
+                <el-dropdown-item command="moodle">Moodle</el-dropdown-item>
+                <el-dropdown-item command="logout">Logout</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <span>Tom</span>
+          <span>{{ nama }}</span>
         </div>
       </el-header>
 
       <el-main style="overflow-y: auto; height: calc(100vh - 60px);">
           <el-scrollbar >
-            <div class="bg-white p-6" style="margin: 0 3px; padding: 0 4px; background-color: #FFFFFA">
-                <router-view/>
-            </div>
+            <router-view/>
           </el-scrollbar>
       </el-main>
     </el-container>
@@ -59,7 +59,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+const nama = localStorage.getItem('nama')
+const router = useRouter()
+
+function handleDropdownCommand(command: string) {
+  if (command === 'moodle') {
+    window.open('http://labnet.cs.upi.edu/', '_blank')
+  } else if (command === 'logout') {
+    localStorage.clear()
+    router.push({ name: 'DashboardLogin' })
+  }
+}
+
 </script>
 
 <style scoped>

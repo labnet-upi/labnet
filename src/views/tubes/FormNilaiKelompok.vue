@@ -6,8 +6,11 @@
       <el-button type="primary" @click="rekapPenilaian">Simpan Nilai</el-button>
     </div>
   </div>
+
+  <div width="300px">
+    <PenilaianTable :data="dataPenilaianKelompok" ref="tabelKelompokRef"/>
+  </div>
   
-  <PenilaianTable :data="dataPenilaianKelompok" ref="tabelKelompokRef"/>
 </template>
 
 <script setup lang="ts">

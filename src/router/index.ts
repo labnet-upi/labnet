@@ -1,24 +1,17 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import Dashboard from '../components/Dashboard.vue'
+import DashboardLayout from '../components/Dashboard.vue'
+import DashboardLogin from '../components/Login.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
-    name: 'home',
-    component: HomeView
-  },
-  {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    path: '/dashboard',
+    name: 'DashboardLogin',
+    component: DashboardLogin
   },
   {
     path: '/dashboard',
-    component: Dashboard,
+    component: DashboardLayout,
+    meta: { requiresAuth: true },
     children: [
       {
         path: 'tubes',
@@ -67,6 +60,15 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('session_token')
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'DashboardLogin' })
+  } else {
+    next()
+  }
 })
 
 export default router

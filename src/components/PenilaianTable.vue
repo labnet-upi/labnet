@@ -1,52 +1,50 @@
 <template>
-  <div class="overflow-auto max-w-full">
-    <el-table
-      :data="data"
-      border
-      row-key="id"
-      :tree-props="{ children: 'children' }"
-      default-expand-all
-      :show-summary="true"
-      :summary-method="getSummary"
-      :span-method="tableSpanMethod"
-      style="width: 100%;"
-    >
-      <el-table-column type="index" label="No"/>
-  
-      <el-table-column prop="kriteria" label="Kriteria Penilaian">
-        <template #default="scope">
-          <strong v-if="scope.row.isParent">{{ scope.row.kriteria }}</strong>
-          <template v-else>{{ scope.row.kriteria }}</template>
-        </template>
-      </el-table-column>
-  
-      <el-table-column label="Bobot(B)" width="100">
-        <template #default="scope">
-          <span v-if="!scope.row.isParent">{{ scope.row.bobot }}%</span>
-        </template>
-      </el-table-column>
-  
-      <el-table-column label="Nilai(N)" width="140">
-        <template #default="scope">
-          <span v-if="!scope.row.isParent">
-            <el-input
-              v-model.number="scope.row.nilai"
-              :min="1"
-              :max="100"
-              placeholder="1-100"
-              @input="updateNilaiXBobot(scope.row)"
-            />
-          </span>
-        </template>
-      </el-table-column>
-  
-      <el-table-column label="B*N" width="100">
-        <template #default="scope">
-          <span v-if="!scope.row.isParent && scope.row.nilai_x_bobot">{{ scope.row.nilai_x_bobot.toFixed(2) }}</span>
-        </template>
-      </el-table-column>
-    </el-table>
-  </div>
+  <el-table
+    :data="data"
+    border
+    row-key="id"
+    :tree-props="{ children: 'children' }"
+    default-expand-all
+    :show-summary="true"
+    :summary-method="getSummary"
+    :span-method="tableSpanMethod"
+    style="width: 100%;"
+  >
+    <el-table-column type="index" label="No"/>
+
+    <el-table-column prop="kriteria" label="Kriteria Penilaian">
+      <template #default="scope">
+        <strong v-if="scope.row.isParent">{{ scope.row.kriteria }}</strong>
+        <template v-else>{{ scope.row.kriteria }}</template>
+      </template>
+    </el-table-column>
+
+    <el-table-column label="Bobot(B)" width="100">
+      <template #default="scope">
+        <span v-if="!scope.row.isParent">{{ scope.row.bobot }}%</span>
+      </template>
+    </el-table-column>
+
+    <el-table-column label="Nilai(N)" width="140">
+      <template #default="scope">
+        <span v-if="!scope.row.isParent">
+          <el-input
+            v-model.number="scope.row.nilai"
+            :min="1"
+            :max="100"
+            placeholder="1-100"
+            @input="updateNilaiXBobot(scope.row)"
+          />
+        </span>
+      </template>
+    </el-table-column>
+
+    <el-table-column label="B*N" width="100">
+      <template #default="scope">
+        <span v-if="!scope.row.isParent && scope.row.nilai_x_bobot">{{ scope.row.nilai_x_bobot.toFixed(2) }}</span>
+      </template>
+    </el-table-column>
+  </el-table>
 </template>
 
 <script setup lang="ts">
