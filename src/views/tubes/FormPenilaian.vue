@@ -106,7 +106,7 @@
 import { onMounted, ref } from 'vue'
 import FormNilaiKelompok from './FormNilaiKelompok.vue'
 import FormNilaiPerorangan from './FormNilaiPerorangan.vue'
-import apiServices from '@/services/apiServices'
+import { apiServices } from '@/services/apiServices'
 
 const loadingInformasi = ref(false)
 

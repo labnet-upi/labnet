@@ -17,7 +17,7 @@
 import { ref } from 'vue'
 import PenilaianTable from '@/components/PenilaianTable.vue'
 import { ElNotification, ElLoading } from 'element-plus'
-import apiServices from '@/services/apiServices'
+import { apiServices } from '@/services/apiServices'
 
 const tabelKelompokRef= ref()
 const dataPenilaianKelompok = ref([])

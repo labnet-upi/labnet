@@ -29,7 +29,7 @@
 import { nextTick, ref, shallowRef } from 'vue'
 import PenilaianTable from '@/components/PenilaianTable.vue'
 import { ElNotification, ElLoading } from 'element-plus'
-import apiServices from '@/services/apiServices'
+import { apiServices } from '@/services/apiServices'
 import type { ComponentPublicInstance } from 'vue'
 
 interface Kelompok {

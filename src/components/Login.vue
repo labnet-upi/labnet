@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import apiServices from '@/services/apiServices'
+import { apiServices } from '@/services/apiServices'
 import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
 

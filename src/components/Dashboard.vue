@@ -10,7 +10,7 @@
                   Tubes
               </template>
 
-              <el-menu-item index="/dashboard/tubes/penilaian">Susun Aspek</el-menu-item>
+              <el-menu-item index="/dashboard/tubes/susun-aspek">Susun Aspek</el-menu-item>
               <el-menu-item index="/dashboard/tubes/penilaian">Penilaian</el-menu-item>
               <el-menu-item index="/dashboard/tubes/rekap">Rekap</el-menu-item>
             </el-sub-menu>
