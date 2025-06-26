@@ -1,6 +1,6 @@
 <template>
   <el-table
-    :data="data"
+    :data="mergedAspek"
     border
     row-key="id"
     :tree-props="{ children: 'children' }"
@@ -9,6 +9,7 @@
     :summary-method="getSummary"
     :span-method="tableSpanMethod"
     style="width: 100%;"
+    v-loading="loadingMergeAspek"
   >
     <el-table-column type="index" label="No"/>
 
@@ -19,7 +20,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column label="Bobot(B)" width="100">
+    <el-table-column label="Bobot(B)" width="100" v-if="!tampilkanNilaiSaja">
       <template #default="scope">
         <span v-if="!scope.row.isParent">{{ scope.row.bobot }}%</span>
       </template>
@@ -39,7 +40,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column label="B*N" width="100">
+    <el-table-column label="B*N" width="100" v-if="!tampilkanNilaiSaja">
       <template #default="scope">
         <span v-if="!scope.row.isParent && scope.row.nilai_x_bobot">{{ scope.row.nilai_x_bobot.toFixed(2) }}</span>
       </template>
@@ -48,20 +49,61 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, nextTick, ref } from 'vue'
+import cloneDeep from 'lodash.clonedeep'
 
-const props = defineProps<{
-  data: any[]
-}>()
+const props = defineProps({
+  aspek_penilaian: {
+    type: Array,
+    required: true
+  },
+  tampilkanNilaiSaja: {
+    type: Boolean,
+    required: true
+  }
+})
+
+const emit = defineEmits(['jadikanStateDraft'])
+
+const mergedAspek = ref<any[]>([])
+const loadingMergeAspek = ref(false)
+const keyData=ref<string>('')
+
+const mergeAspek = async (dataNilai: any[] = [], key: string) => {
+  loadingMergeAspek.value = true
+  keyData.value = key
+  mergedAspek.value.splice(0, mergedAspek.value.length) // Kosongkan array sebelum mengisi ulang
+  
+  const tambahNilai = (aspek: any, dataNilai: any[]): any => {
+    const nilaiDitemukan = dataNilai.find(n => n.aspek_penilaian_id === aspek.id) ?? null;
+
+    return {
+      id: aspek.id,
+      kriteria: aspek.kriteria,
+      bobot: aspek.bobot,
+      isParent: aspek.isParent,
+      nilai: nilaiDitemukan?.nilai,
+      nilai_x_bobot: nilaiDitemukan ? ((nilaiDitemukan.nilai || 0) * (aspek.bobot || 0)) / 100 : undefined,
+      children: aspek.children ? aspek.children.map((child: any) => tambahNilai(child, dataNilai)) : undefined
+    };
+  }
+
+  mergedAspek.value = cloneDeep(props.aspek_penilaian).map((aspek: any) => tambahNilai(aspek, dataNilai))
+
+  setTimeout(() => {
+    loadingMergeAspek.value = false
+  }, 500)
+}
 
 function updateNilaiXBobot(row: any) {
+  emit('jadikanStateDraft', true)
   row.nilai_x_bobot = ((row.nilai || 0) * (row.bobot || 0)) / 100
 }
 
 function getSummary() {
   let total = 0
-  props.data.forEach(group => {
-    group.children?.forEach(child => {
+  mergedAspek.value.forEach(group => {
+    group.children?.forEach((child: { nilai_x_bobot: any; }) => {
       total += child.nilai_x_bobot || 0
     })
   })
@@ -76,7 +118,7 @@ function tableSpanMethod({ row, columnIndex }: { row: any; columnIndex: number }
 }
 
 function getRekapNilai() {
-  const nilaiPerId = props.data.reduce((acc, element) => {
+  const nilaiPerId = mergedAspek.value.reduce((acc, element) => {
     const children = element.children?.reduce((childAcc: any[], childElement: any) => {
       if (childElement.nilai != null) {
         childAcc.push({
@@ -88,10 +130,7 @@ function getRekapNilai() {
     }, []) || []
 
     if (children.length > 0) {
-      acc.push({
-        aspek_penilaian_id: element.id,
-        children: children
-      })
+      acc.push(...children)
     }
 
     return acc
@@ -100,7 +139,15 @@ function getRekapNilai() {
   return { nilai: nilaiPerId }
 }
 
+function getKeyData() {
+  return {
+    key: keyData.value,
+  }
+}
+
 defineExpose({
-  getRekapNilai
+  getRekapNilai,
+  mergeAspek,
+  getKeyData
 })
 </script>

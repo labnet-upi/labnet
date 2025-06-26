@@ -11,11 +11,13 @@
     "axios": "^1.10.0",
     "core-js": "^3.8.3",
     "element-plus": "^2.10.2",
+    "lodash.clonedeep": "^4.5.0",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
+    "@types/lodash.clonedeep": "^4.5.9",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/cli-plugin-typescript": "~5.0.0",
