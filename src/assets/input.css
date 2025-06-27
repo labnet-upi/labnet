@@ -1,1 +1,16 @@
 @import "tailwindcss";
+.danger-row td {
+  background-color: var(--el-color-danger-light-8) !important;
+  color: var(--el-color-danger) !important;
+  font-weight: bold;
+}
+.warning-row td {
+  background-color: var(--el-color-warning-light-8) !important;
+  color: var(--el-color-warning) !important;
+  font-weight: bold;
+}
+.success-row td {
+  background-color: var(--el-color-success-light-8) !important;
+  color: var(--el-color-success) !important;
+  font-weight: bold;
+}

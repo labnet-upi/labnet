@@ -17,6 +17,11 @@ const routes: Array<RouteRecordRaw> = [
         path: 'tubes',
         children: [
           {
+            path: 'susun-aspek',
+            name: 'SusunAspek',
+            component: () => import('../views/tubes/SusunAspek.vue')
+          },
+          {
             path: 'penilaian',
             name: 'PenilaianTubes',
             component: () => import('../views/tubes/FormPenilaian.vue')

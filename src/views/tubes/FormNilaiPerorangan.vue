@@ -17,7 +17,7 @@
         <el-descriptions-item label="Nama">{{ anggota.nama }}</el-descriptions-item>
         <el-descriptions-item label="NIM">{{ anggota.nim }}</el-descriptions-item>
       </el-descriptions>
-      <PenilaianTable :aspek_penilaian="aspekPenilaianPerorangan" :ref="el => tabelPeroranganRef[anggota_index] = el" :tampilkan-nilai-saja="true" @jadikan-state-draft="jadikanStateDraft"/>
+      <PenilaianTable :aspek_penilaian="aspekPenilaianPerorangan" :ref="el => tabelPeroranganRef[anggota_index] = el" :tampilkan-nilai-saja="true" @change="jadikanStateDraft"/>
     </el-card>
   </div>
   <el-empty v-else>

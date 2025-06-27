@@ -9,7 +9,7 @@
   </div>
 
   <div width="300px">
-    <PenilaianTable :aspek_penilaian="aspekPenilaianKelompok" ref="tabelKelompokRef" :tampilkan-nilai-saja="false" @jadikan-state-draft="jadikanStateDraft"/>
+    <PenilaianTable :aspek_penilaian="aspekPenilaianKelompok" ref="tabelKelompokRef" :tampilkan-nilai-saja="false" @change="jadikanStateDraft"/>
   </div>
 </template>
 
