@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { nextTick, ref, shallowRef } from 'vue'
 import PenilaianTable from '@/components/PenilaianTable.vue'
-import { ElNotification, ElLoading } from 'element-plus'
+import { ElNotification, ElLoading, ElMessage } from 'element-plus'
 import { apiServices } from '@/services/apiServices'
 import type { ComponentPublicInstance } from 'vue'
 
@@ -49,7 +49,7 @@ const belumDisimpan = ref<boolean>(false)
 
 async function loadAspekPenilaianPerorangan(tahun: number) {
   aspekPenilaianPerorangan.value.splice(0, aspekPenilaianPerorangan.value.length);
-  const response = await apiServices.get(`/tugas_besar/penilaian/aspek-penilaian-perorangan?tahun=${tahun}`)
+  const response = await apiServices.get(`/tugas_besar/aspek/penilaian-perorangan?tahun=${tahun}`)
   aspekPenilaianPerorangan.value = response.data
 }
 
@@ -111,8 +111,7 @@ async function setFormNilaiPerorangan(kelompok: Kelompok) {
     }
   });
 
-  ElNotification({
-    title: 'Info',
+  ElMessage({
     message: 'Data perorangan selesai dimuat',
     type: 'info',
   })

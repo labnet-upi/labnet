@@ -11,7 +11,9 @@
     style="width: 100%;"
     v-loading="loadingMergeAspek"
   >
-    <el-table-column type="index" label="No"/>
+    <el-table-column prop="no" label="#" width="60" type="index">
+      <template #default="scope">{{ scope.row.no }}</template>
+    </el-table-column>
 
     <el-table-column prop="kriteria" label="Kriteria Penilaian">
       <template #default="scope">
@@ -75,27 +77,52 @@ const keyData=ref<string>('')
 const mergeAspek = async (dataNilai: any[] = [], key: string) => {
   loadingMergeAspek.value = true
   keyData.value = key
-  mergedAspek.value.splice(0, mergedAspek.value.length) // Kosongkan array sebelum mengisi ulang
-  
-  const tambahNilai = (aspek: any, dataNilai: any[]): any => {
-    const nilaiDitemukan = dataNilai.find(n => n.aspek_penilaian_id === aspek.id) ?? null;
+  mergedAspek.value.splice(0, mergedAspek.value.length)
 
-    return {
+  const nilaiMap = new Map(dataNilai.map(n => [n.aspek_penilaian_id, n]))
+
+  let parentIndex = 1
+
+  const tambahNilai = (aspek: any, parentNum?: number, childNum?: number): any => {
+    const nilaiDitemukan = nilaiMap.get(aspek.id) ?? null
+
+    const nomor = parentNum && childNum ? `${parentNum}.${childNum}` : `${parentIndex}`
+
+    const isChild = Boolean(parentNum && childNum)
+
+    const nilai = aspek.isParent
+      ? null
+      : nilaiDitemukan?.nilai ?? (isChild ? 90 : null)
+
+    const result: any = {
       id: aspek.id,
       kriteria: aspek.kriteria,
       bobot: aspek.bobot,
       isParent: aspek.isParent,
-      nilai: nilaiDitemukan?.nilai,
-      nilai_x_bobot: nilaiDitemukan ? ((nilaiDitemukan.nilai || 0) * (aspek.bobot || 0)) / 100 : undefined,
-      children: aspek.children ? aspek.children.map((child: any) => tambahNilai(child, dataNilai)) : undefined
-    };
+      nilai,
+      nilai_x_bobot: typeof nilai === 'number' && aspek.bobot
+        ? (nilai * aspek.bobot) / 100
+        : undefined,
+      no: nomor,
+    }
+
+    if (aspek.children && aspek.children.length) {
+      let localChildIndex = 1
+      result.children = aspek.children.map((child: any) =>
+        tambahNilai(child, parentIndex, localChildIndex++)
+      )
+    }
+
+    if (!parentNum) parentIndex++
+
+    return result
   }
 
-  mergedAspek.value = cloneDeep(props.aspek_penilaian).map((aspek: any) => tambahNilai(aspek, dataNilai))
+  mergedAspek.value = cloneDeep(props.aspek_penilaian).map((aspek: any) => tambahNilai(aspek))
 
   setTimeout(() => {
     loadingMergeAspek.value = false
-  }, 500)
+  }, 300)
 }
 
 function updateNilaiXBobot(row: any) {

@@ -100,11 +100,11 @@ async function loadAspek({
 onMounted(() => {
   loadAspek({
     formRef: formSusunAspekKelompokRef,
-    endpoint: "/tugas_besar/penilaian/aspek-penilaian-kelompok"
+    endpoint: "/tugas_besar/aspek/penilaian-kelompok"
   })
   loadAspek({
     formRef: formSusunAspekPeroranganRef,
-    endpoint: "/tugas_besar/penilaian/aspek-penilaian-perorangan"
+    endpoint: "/tugas_besar/aspek/penilaian-perorangan"
   })
 })
 
@@ -164,7 +164,7 @@ async function simpanAspek({
 function simpanAspekKelompok() {
   simpanAspek({
     formRef: formSusunAspekKelompokRef,
-    endpoint: '/tugas_besar/penilaian/aspek-penilaian-kelompok',
+    endpoint: '/tugas_besar/aspek/penilaian-kelompok',
     setDisabledFlag: disabledSimpanAspekKelompok
   })
 }
@@ -172,7 +172,7 @@ function simpanAspekKelompok() {
 function simpanAspekPerorangan() {
   simpanAspek({
     formRef: formSusunAspekPeroranganRef,
-    endpoint: '/tugas_besar/penilaian/aspek-penilaian-perorangan',
+    endpoint: '/tugas_besar/aspek/penilaian-perorangan',
     setDisabledFlag: disabledSimpanAspekPerorangan
   })
 }

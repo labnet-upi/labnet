@@ -16,6 +16,7 @@
       <!-- Input pencarian -->
       <el-input
         v-model="search"
+        prefix-icon="Search"
         placeholder="Cari..."
         clearable
         class="flex-1"

@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import PenilaianTable from '@/components/PenilaianTable.vue'
-import { ElNotification, ElLoading } from 'element-plus'
+import { ElNotification, ElLoading, ElMessage } from 'element-plus'
 import { apiServices } from '@/services/apiServices'
 
 const tabelKelompokRef= ref()
@@ -30,7 +30,7 @@ async function loadAspekPenilaianKelompok(tahun: number) {
   localStorage.setItem('dataPenilaianKelompok_' + idKelompok.value, JSON.stringify(hasilRekap))
 
   aspekPenilaianKelompok.value.splice(0, aspekPenilaianKelompok.value.length)
-  const response = await apiServices.get(`/tugas_besar/penilaian/aspek-penilaian-kelompok?tahun=${tahun}`)
+  const response = await apiServices.get(`/tugas_besar/aspek/penilaian-kelompok?tahun=${tahun}`)
   aspekPenilaianKelompok.value = response.data
 }
 
@@ -64,8 +64,7 @@ async function setFormNilaiKelompok(id_kelompok: string) {
     tabelKelompokRef.value.mergeAspek(dataPenilaianKelompok.value, idKelompok.value)
   }
 
-  ElNotification({
-    title: 'Info',
+  ElMessage({
     message: 'Data kelompok selesai dimuat',
     type: 'info',
   })
