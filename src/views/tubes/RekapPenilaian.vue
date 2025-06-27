@@ -18,7 +18,7 @@
         <paginated-table-column prop="nama" label="Nama" sortable/>
         <paginated-table-column prop="nim" label="NIM" sortable/>
         <paginated-table-column prop="kelas" label="Kelas" />
-        <paginated-table-column prop="angkatan" label="Tahun" sortable/>
+        <paginated-table-column prop="tahun" label="Tahun" sortable/>
         <paginated-table-column prop="nomorKelompok" label="Kelompok">
           <template #default="{ row }">Kelompok {{ row.nomor }}</template>
         </paginated-table-column>
@@ -50,7 +50,7 @@
           <template #default="{ row }">Kelompok {{ row.nomor }}</template>
         </paginated-table-column>
         <paginated-table-column prop="kelas" label="Kelas" />
-        <paginated-table-column prop="angkatan" label="Tahun" />
+        <paginated-table-column prop="tahun" label="Tahun" />
         <paginated-table-column prop="laporan" label="Laporan">
           <template #default="{ row }">
             <el-link
@@ -234,7 +234,7 @@ onMounted(() => {
   tabelPeroranganRef.value.setSearchFields(['nama', 'nim'])
   tabelKelompokRef.value.setSearchFields(['nama', 'nim'])
 
-  // Buat daftar angkatan 3 tahun kebelakang
+  // Buat daftar tahun 3 tahun kebelakang
   opsiTahun.push(new Date().getFullYear() - 2);
   opsiTahun.push(new Date().getFullYear() - 1);
   opsiTahun.push(new Date().getFullYear());

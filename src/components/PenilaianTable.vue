@@ -88,11 +88,15 @@ const mergeAspek = async (dataNilai: any[] = [], key: string) => {
 
     const nomor = parentNum && childNum ? `${parentNum}.${childNum}` : `${parentIndex}`
 
-    const isChild = Boolean(parentNum && childNum)
-
-    const nilai = aspek.isParent
-      ? null
-      : nilaiDitemukan?.nilai ?? (isChild ? 90 : null)
+    let nilai = null
+    if (!aspek.isParent) {
+      if (nilaiDitemukan?.nilai != null) {
+        nilai = nilaiDitemukan.nilai
+      } else {
+        nilai = 90
+        changeTrigged()
+      }
+    }
 
     const result: any = {
       id: aspek.id,

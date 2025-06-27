@@ -1,14 +1,14 @@
 <template>
   <el-card>
     <el-descriptions :column="1" border v-loading="loadingInformasi">
-      <el-descriptions-item label="Angkatan">
-        <el-radio-group v-model="angkatanDipilih" size="small" @change="gantiAngkatan">
+      <el-descriptions-item label="tahun">
+        <el-radio-group v-model="tahunDipilih" size="small" @change="gantitahun">
           <el-radio-button
-            v-for="angkatan in daftarAngkatan"
-            :key="angkatan"
-            :label="angkatan"
+            v-for="tahun in daftartahun"
+            :key="tahun"
+            :label="tahun"
           >
-            {{ angkatan }}
+            {{ tahun }}
           </el-radio-button>
         </el-radio-group>
       </el-descriptions-item>
@@ -110,15 +110,15 @@ import { apiServices } from '@/services/apiServices'
 
 const loadingInformasi = ref(false)
 
-const angkatanDipilih = ref()
+const tahunDipilih = ref()
 const kelasDipilih = ref()
-const daftarAngkatan: number[] = []
+const daftartahun: number[] = []
 
 interface Kelompok {
   id: number | null
   nomor: number | null
   kelas: string | null
-  angkatan: number | null
+  tahun: number | null
   anggota: Array<{ nama: string; nim: string }>
   laporan: string
 }
@@ -142,7 +142,7 @@ const kelompokDinilai = ref<Kelompok>({
   id: null,
   nomor: null,
   kelas: null,
-  angkatan: null,
+  tahun: null,
   anggota: [],
   laporan: '',
 })
@@ -156,23 +156,23 @@ const kosongkanKelompok = () => {
     id: null,
     nomor: null,
     kelas: null,
-    angkatan: null,
+    tahun: null,
     anggota: [],
     laporan: '',
   }
   kelompokDipilihModal.value = null;
 }
 
-const gantiAngkatan = async () => {
+const gantitahun = async () => {
   formPernilaianDitampilkan.value = false
   kosongkanKelompok();
-  formNilaiKelompok.value?.loadAspekPenilaianKelompok(angkatanDipilih.value);
-  formNilaiPerorangan.value?.loadAspekPenilaianPerorangan(angkatanDipilih.value);
+  formNilaiKelompok.value?.loadAspekPenilaianKelompok(tahunDipilih.value);
+  formNilaiPerorangan.value?.loadAspekPenilaianPerorangan(tahunDipilih.value);
 
   seluruhDaftarKelompok.value = [];
   daftarKelompokDifilter.value = [];
 
-  const response = await apiServices.get('/tugas_besar/penilaian/daftar-kelompok?angkatan=' + angkatanDipilih.value);
+  const response = await apiServices.get('/tugas_besar/penilaian/daftar-kelompok?tahun=' + tahunDipilih.value);
   seluruhDaftarKelompok.value = response.data;
   loadingInformasi.value = false;
 }
@@ -199,13 +199,13 @@ const gantiKelompok = (kelompok: Kelompok) => {
 onMounted(() => {
   loadingInformasi.value = true;
 
-  // Buat daftar angkatan 3 tahun kebelakang
-  daftarAngkatan.push(new Date().getFullYear() - 2);
-  daftarAngkatan.push(new Date().getFullYear() - 1);
-  daftarAngkatan.push(new Date().getFullYear());
+  // Buat daftar tahun 3 tahun kebelakang
+  daftartahun.push(new Date().getFullYear() - 2);
+  daftartahun.push(new Date().getFullYear() - 1);
+  daftartahun.push(new Date().getFullYear());
 
-  angkatanDipilih.value = new Date().getFullYear();
-  gantiAngkatan()
+  tahunDipilih.value = new Date().getFullYear();
+  gantitahun()
 })
 
 </script>

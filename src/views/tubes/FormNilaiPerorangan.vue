@@ -36,8 +36,8 @@ interface Kelompok {
   id: number | null
   nomor: number | null
   kelas: string | null
-  angkatan: number | null
-  anggota: Array<{ nama: string; nim: string }>
+  tahun: number | null
+  anggota: Array<{ nama: string; nim: string; id: string }>
   laporan: string
 }
 const tabelPeroranganRef = shallowRef<any[]>([])
@@ -55,10 +55,10 @@ async function loadAspekPenilaianPerorangan(tahun: number) {
 
 async function loadDataPenilaianPerorangan(kelompok: Kelompok) {
   dataPenilaianPerorangan.value.splice(0, dataPenilaianPerorangan.value.length);
-  const firstCachedData = localStorage.getItem('dataPenilaianPerorangan_' + kelompok.anggota[0].nim);
+  const firstCachedData = localStorage.getItem('dataPenilaianPerorangan_' + kelompok.anggota[0].id);
   if (firstCachedData) {
     kelompok.anggota.forEach((anggota, index) => {
-      const cachedData = localStorage.getItem('dataPenilaianPerorangan_' + anggota.nim);
+      const cachedData = localStorage.getItem('dataPenilaianPerorangan_' + anggota.id);
       if (!cachedData) return;
       const parsedCachedData = JSON.parse(cachedData);
 
@@ -71,7 +71,8 @@ async function loadDataPenilaianPerorangan(kelompok: Kelompok) {
           }));
       if (nilaiArray.length) {
         dataPenilaianPerorangan.value.push({
-          nim: anggota.nim,
+          id: anggota.id,
+          id_mahasiswa: anggota.id,
           nilai: nilaiArray
         });
       }
@@ -87,6 +88,17 @@ async function loadDataPenilaianPerorangan(kelompok: Kelompok) {
   }
 }
 
+function mergeAspek() {
+  tabelPeroranganRef.value.forEach((tabel, index) => {
+    const dataNilai = dataPenilaianPerorangan.value.find((item) => item?.id_mahasiswa === kelompokDinilai.value?.anggota[index]?.id) ?? null;
+    if (dataNilai) {
+      tabel.mergeAspek(dataNilai.nilai, kelompokDinilai.value?.anggota[index]?.id);
+    } else {
+      tabel.mergeAspek([], kelompokDinilai.value?.anggota[index]?.id);
+    }
+  });
+}
+
 async function setFormNilaiPerorangan(kelompok: Kelompok) {
   if(kelompok.id !== kelompokDinilai.value?.id && kelompokDinilai.value?.id) {
     tabelPeroranganRef.value.forEach((a: ComponentPublicInstance<{ getRekapNilai: () => any; }>, index) => {
@@ -94,7 +106,7 @@ async function setFormNilaiPerorangan(kelompok: Kelompok) {
         belumDisimpan: belumDisimpan.value,
         ...a.getRekapNilai()
       }
-      localStorage.setItem('dataPenilaianPerorangan_' + kelompokDinilai.value?.anggota[index]?.nim, JSON.stringify(hasilRekap));
+      localStorage.setItem('dataPenilaianPerorangan_' + kelompokDinilai.value?.anggota[index]?.id, JSON.stringify(hasilRekap));
     });
   }
   await loadDataPenilaianPerorangan(kelompok);
@@ -102,14 +114,7 @@ async function setFormNilaiPerorangan(kelompok: Kelompok) {
 
   // tunggu sampai tabelPeroranganRef.value terisi
   await nextTick();
-  tabelPeroranganRef.value.forEach((tabel, index) => {
-    const dataNilai = dataPenilaianPerorangan.value.find((item) => item?.nim === kelompokDinilai.value?.anggota[index]?.nim) ?? null;
-    if (dataNilai) {
-      tabel.mergeAspek(dataNilai.nilai, kelompokDinilai.value?.anggota[index]?.nim);
-    } else {
-      tabel.mergeAspek([], kelompokDinilai.value?.anggota[index]?.nim);
-    }
-  });
+  mergeAspek()
 
   ElMessage({
     message: 'Data perorangan selesai dimuat',
@@ -132,43 +137,52 @@ async function rekapPenilaian() {
 
   const hasilRekap = tabelPeroranganRef.value.reduce<any[]>((acc, item) => {
     const nilai = item?.getRekapNilai();
-    const nim = item?.getKeyData();
+    const id_mahasiswa = item?.getKeyData();
     if (nilai) {
       acc.push({
-        nim: nim.key,
+        id_kelompok: kelompokDinilai.value?.id,
+        id_mahasiswa: id_mahasiswa.key,
         nilai: nilai.nilai,
       });
     }
     return acc;
   }, []);
 
-  apiServices.post('/tugas_besar/penilaian/nilai-perorangan', hasilRekap)
-  .then(() => {
-    // hapus data lama di localStorage
+  try {
+    const response = await apiServices.post('/tugas_besar/penilaian/nilai-perorangan', hasilRekap);
+
+    // Hapus data lama dari localStorage
     kelompokDinilai.value?.anggota.forEach((anggota) => {
-      localStorage.removeItem('dataPenilaianPerorangan_' + anggota.nim);
+      localStorage.removeItem('dataPenilaianPerorangan_' + anggota.id);
     });
-  
+
+    dataPenilaianPerorangan.value = response.data;
+
+    await nextTick(); // pastikan DOM update sebelum merge
+    mergeAspek();
+
     belumDisimpan.value = false;
-  
+
     setTimeout(() => {
-      loadingInstance.close()
+      loadingInstance.close();
       ElNotification({
         title: 'Sukses',
         message: 'Data berhasil disimpan!',
         type: 'success',
         position: 'bottom-right',
-      })
-    }, 500)
-  }).catch((error) => {
+      });
+    }, 500);
+    
+  } catch (error) {
     console.error('Error saving data:', error);
+    loadingInstance.close(); // pastikan loading ditutup meskipun gagal
     ElNotification({
       title: 'Error',
       message: 'Gagal menyimpan data penilaian perorangan.',
       type: 'error',
       position: 'bottom-right',
     });
-  });
+  }
 }
 
 defineExpose({
