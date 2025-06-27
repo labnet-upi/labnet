@@ -63,7 +63,10 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['jadikanStateDraft'])
+const emit = defineEmits(['change'])
+function changeTrigged() {
+  emit('change')
+}
 
 const mergedAspek = ref<any[]>([])
 const loadingMergeAspek = ref(false)
@@ -96,7 +99,7 @@ const mergeAspek = async (dataNilai: any[] = [], key: string) => {
 }
 
 function updateNilaiXBobot(row: any) {
-  emit('jadikanStateDraft', true)
+  changeTrigged()
   row.nilai_x_bobot = ((row.nilai || 0) * (row.bobot || 0)) / 100
 }
 
