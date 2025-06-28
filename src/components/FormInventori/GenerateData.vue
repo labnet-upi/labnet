@@ -1,65 +1,55 @@
 <template>
   <el-form label-position="top" class="mb-4">
-    <ParentGenerateData></ParentGenerateData>
+    <ParentGenerateData
+      @generate="generate"
+      @ubah-satuan="setChildDisableState"
+      @prefix-diubah="setPrefix"
+      ref="parentDataRef">
+    </ParentGenerateData>
+    <ChildGenerateData
+      @submit="addChild"
+      ref="childDataRef"
+      :disable-form="disableChild">
+    </ChildGenerateData>
 
-    <el-row>
-      <el-col>
-        <h3>Child</h3>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="12">
-      <el-col :span="5">
-        <el-form-item label="Barang">
-          <el-input v-model="parentFormData.namaBarang" placeholder="Nama Barang" />
-        </el-form-item>
-      </el-col>
-
-      <el-col :span="5">
-        <el-form-item label="Prefiks Kode">
-          <el-input v-model="parentFormData.prefiksKode" placeholder="Prefiks Kode" />
-        </el-form-item>
-      </el-col>
-
-      <el-col :span="5">
-        <el-form-item label="Kondisi">
-          <el-select v-model="parentFormData.kondisi" placeholder="Pilih Kondisi">
-            <el-option
-              v-for="opsi in opsiKondisiBarang"
-              :key="opsi.value"
-              :label="opsi.label"
-              :value="opsi.value"
-            />
-          </el-select>
-        </el-form-item>
-      </el-col>
-
-      <el-col :span="5">
-        <el-form-item label="Satuan">
-          <el-select v-model="parentFormData.satuan" placeholder="Pilih Satuan">
-            <el-option
-              v-for="opsi in opsiSatuan"
-              :key="opsi.value"
-              :label="opsi.label"
-              :value="opsi.value"
-            />
-          </el-select>
-        </el-form-item>
+    <el-row v-if="pcsData.length > 0" class="mt-2">
+      <el-col :span="24">
+        <el-tag
+          v-for="(c, idx) in pcsData"
+          :key="c.id"
+          closable
+          @close="hapusChild(idx)"
+          class="mr-2 mb-2"
+        >
+          {{ c.namaBarang }} ({{ c.jumlah }} {{ c.satuan }} {{ c.kondisi }})
+        </el-tag>
       </el-col>
     </el-row>
   </el-form>
 
   <el-dialog
     v-model="dialogVisible"
-    title="Tips"
-    width="500"
+    title="Hasil"
+    width="800"
   >
-    <span>This is a message</span>
+    <el-scrollbar style="max-height: 400px;">
+      <el-table :data="tableData" row-key="id">
+        <el-table-column type="index" label="#" width="50" />
+        <el-table-column prop="nama" label="Nama"/>
+        <el-table-column prop="kode" label="Kode"/>
+        <el-table-column prop="kondisi" label="Kondisi"/>
+        <el-table-column prop="jumlah" label="Jumlah">
+          <template #default="scope">
+            {{ scope.row.jumlah }} {{ scope.row.satuan }}
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-scrollbar>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="dialogVisible = false">
-          Confirm
+        <el-button @click="dialogVisible = false">Batal</el-button>
+        <el-button type="primary" @click="simpan">
+          Pindahkan Data
         </el-button>
       </div>
     </template>
@@ -67,32 +57,62 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 import ParentGenerateData from '@/components/FormInventori/ParentGenerateData.vue'
-import { FormBarang, opsiKondisiBarang, opsiSatuan } from '@/services/inventoriServices'
+import ChildGenerateData from '@/components/FormInventori/ChildGenerateData.vue'
+import { FormBarang } from '@/services/inventoriServices'
+import { v4 as uuidv4 } from 'uuid'
 
-const defaultParentFormData = () => ({
-  namaBarang: '',
-  prefiksKode: '',
-  angkaAwal: 1,
-  jumlah: 1,
-  kondisi: opsiKondisiBarang[0].value,
-  satuan: opsiSatuan[0].value,
-})
-const parentFormData = reactive<any>({...defaultParentFormData()})
+const emit = defineEmits(['simpan'])
 
-const defaultChildFormData = () => ({
-  namaBarang: '',
-  prefiksKode: '',
-  kode: '',
-  kondisi: opsiKondisiBarang[0].value,
-  satuan: opsiSatuan[0].value,
-})
-const childFormData = reactive<any>({...defaultChildFormData()})
+const dialogVisible = ref(false)
+const tableData = ref<FormBarang[]>([])
+const parentDataRef = ref()
+const childDataRef = ref()
 
-const dialogVisible = ref()
-function resetForm() {
+const disableChild = ref<boolean>(true)
+const pcsData = ref<any[]>([])
+
+function generate(newData: any) {
+  const hasil: FormBarang[] = [];
+  for (let i = 0; i < newData.jumlah; i++) {
+    const angka = newData.angkaAwal + i;
+    const parentKode = `${newData.prefiksKode}${angka}`
+    const children = pcsData.value.map((child) => ({
+      id: uuidv4(),
+      nama: child.namaBarang,
+      kode: `${child.kodeAktif ? child.prefiksKode : parentKode}${child.kode}`,
+      kondisi: child.kondisi,
+      satuan: child.satuan,
+      jumlah: child.jumlah,
+      parentId: newData.id,
+    }));
+
+    hasil.push({
+      id: uuidv4(),
+      nama: newData.namaBarang,
+      kode: parentKode,
+      kondisi: newData.kondisi,
+      satuan: newData.satuan,
+      jumlah: newData.jumlah,
+      children: children ?? []
+    });
+  }
+  tableData.value = hasil
+  dialogVisible.value = true
 }
 
+const simpan = () => {
+  emit('simpan', tableData.value)
+  parentDataRef.value.resetForm()
+  childDataRef.value.resetForm()
+  dialogVisible.value = false
+  pcsData.value.slice(0)
+}
+
+const addChild = (newData: any) => pcsData.value.push(newData)
+const setChildDisableState = (status: boolean) => disableChild.value = status
+const setPrefix = (prefix: string) => childDataRef.value.setPrefix(prefix)
+const hapusChild = (idx: number) => pcsData.value.splice(idx, 1)
 
 </script>

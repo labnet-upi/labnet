@@ -8,7 +8,7 @@
 
     <el-col :span="5">
       <el-form-item label="Prefiks Kode">
-        <el-input v-model="parentFormData.prefiksKode" placeholder="Prefiks Kode" />
+        <el-input v-model="parentFormData.prefiksKode" placeholder="Prefiks Kode" @blur="prefiksDiubah"/>
       </el-form-item>
     </el-col>
 
@@ -27,7 +27,7 @@
     <el-col :span="6">
       <div class="!flex !items-end !justify-end">
         <el-button type="warning" icon="RefreshRight" @click="resetForm"/>
-        <el-button type="info" icon="MagicStick" @click="generateData">Generate</el-button>
+        <el-button type="info" icon="MagicStick" @click="generateData" :disabled="parentFormData.prefiksKode == ''">Generate</el-button>
       </div>
     </el-col>
   </el-row>
@@ -48,7 +48,7 @@
 
     <el-col :span="5">
       <el-form-item label="Satuan">
-        <el-select v-model="parentFormData.satuan" placeholder="Pilih Satuan">
+        <el-select v-model="parentFormData.satuan" placeholder="Pilih Satuan" @change="handleSatuan">
           <el-option
             v-for="opsi in opsiSatuan"
             :key="opsi.value"
@@ -62,10 +62,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { opsiKondisiBarang, opsiSatuan } from '@/services/inventoriServices'
 
-const emit = defineEmits(['generate'])
+const emit = defineEmits(['generate', 'prefix-diubah', 'ubah-satuan'])
 
 const defaultParentFormData = () => ({
   namaBarang: '',
@@ -82,6 +82,17 @@ const resetForm = () => Object.assign(parentFormData, defaultParentFormData())
 const generateData = () => {
   const newData = Object.assign({}, parentFormData)
   emit('generate', newData)
-  resetForm()
 }
+
+function prefiksDiubah() {
+  emit('prefix-diubah', parentFormData.prefiksKode + '-')
+}
+
+function handleSatuan() {
+  emit('ubah-satuan', parentFormData.satuan === opsiSatuan[0].value)
+}
+
+defineExpose({
+  resetForm
+})
 </script>

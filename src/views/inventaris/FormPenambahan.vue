@@ -5,14 +5,24 @@
       :options="opsiModeInput"
       class="my-3"
     />
-    <GenerateData v-if="modeInput === opsiModeInput[0].value"></GenerateData>
-    <RegisterSection @submit="pushToTableData" v-else></RegisterSection>
+    <GenerateData
+      v-if="modeInput === opsiModeInput[0].value"
+      @simpan="(newData) => pushToTableData(newData)">
+    </GenerateData>
+    <RegisterSection
+      v-else  
+      @submit="(newData) => pushToTableData([newData])">
+    </RegisterSection>
   </el-card>
 
   <el-card class="mb-6">
-    <div class="flex items-end justify-end">
-      <el-button type="warning" icon="RefreshRight">Reset</el-button>
-      <el-button type="success" icon="CircleCheckFilled">Simpan</el-button>
+    <div class="flex items-center justify-between">
+      <h3 class="text-xl font-semibold">Daftar Inventaris</h3>
+
+      <div class="flex items-center space-x-2">
+        <el-button type="warning" icon="RefreshRight">Reset</el-button>
+        <el-button type="success" icon="CircleCheckFilled">Simpan</el-button>
+      </div>
     </div>
   </el-card>
 
@@ -31,10 +41,6 @@ const opsiModeInput = [
   {label: "Manual", value: "manual"},
 ]
 const modeInput = ref(opsiModeInput[0].value)
-
 const listInventoriRef = ref()
-
-const pushToTableData = (newData: FormBarang) => {
-  listInventoriRef.value.addToTableData(newData)
-}
+const pushToTableData = (newData: FormBarang[]) => listInventoriRef.value.addToTableData(newData)
 </script>

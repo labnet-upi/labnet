@@ -109,7 +109,6 @@ const hapusData = () => {
 }
 
 const konfirmasiPenghapus = (mode: string) => {
-  console.log("mode", mode)
   modeHapus.value = mode
   deleteConfirmVisible.value = true
 }
@@ -122,32 +121,15 @@ const handleCommand = (command: string, row: any) => {
   if (command === 'hapus') {
     konfirmasiPenghapus("single")
   } else if (command === 'salin') {
-    // const copied = { ...row, id: uuidv4() }
-    // tableData.value.splice(index + 1, 0, copied)
+    salinData(row)
   }
 }
 
-const handleSelectionChange = (val: FormBarang[]) => {
-  console.log(val)
-  selectedList.value = val
-}
-
-function setTableData(newData: FormBarang[]) {
-  tableData.value = newData
-}
-
-function addToTableData(newData: FormBarang) {
-  tableData.value.push(newData)
-}
-
-function getTableData() {
-  const copiedData = Array.from(tableData.value)
-  return copiedData
-}
-
-function clearTableData() {
-  tableData.value.slice(0)
-}
+const handleSelectionChange = (val: FormBarang[]) => selectedList.value = val
+const setTableData = (newData: FormBarang[]) => tableData.value = newData
+const addToTableData = (newData: FormBarang[]) => newData.forEach(data => tableData.value.push(data))
+const getTableData = () => (Array.from(tableData.value))
+const clearTableData = () => tableData.value.slice(0)
 
 defineExpose({
   setTableData,
