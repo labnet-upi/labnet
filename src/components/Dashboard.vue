@@ -50,9 +50,10 @@
       </el-header>
 
       <el-main style="overflow-y: auto; height: calc(100vh - 60px);">
-          <el-scrollbar >
-            <router-view/>
-          </el-scrollbar>
+        <Breadcrumb class="my-3"/>
+        <el-scrollbar >
+          <router-view/>
+        </el-scrollbar>
       </el-main>
     </el-container>
   </el-container>
@@ -60,6 +61,8 @@
 
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
+import Breadcrumb from '@/components/Breadcrumb.vue'
+
 const nama = localStorage.getItem('nama')
 const router = useRouter()
 
