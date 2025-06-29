@@ -61,7 +61,7 @@ import { ref } from 'vue'
 import ParentGenerateData from '@/components/FormInventori/ParentGenerateData.vue'
 import ChildGenerateData from '@/components/FormInventori/ChildGenerateData.vue'
 import { FormBarang } from '@/services/inventoriServices'
-import { v4 as uuidv4 } from 'uuid'
+import { ObjectId } from 'bson'
 
 const emit = defineEmits(['simpan'])
 
@@ -79,7 +79,7 @@ function generate(newData: any) {
     const angka = newData.angkaAwal + i;
     const parentKode = `${newData.prefiksKode}${angka}`
     const children = pcsData.value.map((child) => ({
-      id: uuidv4(),
+      id: new ObjectId().toHexString(),
       nama: child.namaBarang,
       kode: `${child.kodeAktif ? child.prefiksKode : parentKode}${child.kode}`,
       kondisi: child.kondisi,
@@ -89,7 +89,7 @@ function generate(newData: any) {
     }));
 
     hasil.push({
-      id: uuidv4(),
+      id: new ObjectId().toHexString(),
       nama: newData.namaBarang,
       kode: parentKode,
       kondisi: newData.kondisi,

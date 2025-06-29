@@ -66,7 +66,6 @@ function handleSubmit(parentData: FormBarang) {
   const childData = Array.from(pcsData.value)
   emit('submit', {
     ...parentData,
-    parentId: parentData.id,
     children: childData
   })
 

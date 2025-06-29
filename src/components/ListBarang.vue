@@ -5,6 +5,7 @@
     style="width: 100%" row-key="id"
     default-expand-all
     :show-search="props.showSearch"
+    :search-fields="searchFields"
     @selection-change="handleSelectionChange">
     <paginated-table-column type="selection" width="55" />
     <paginated-table-column prop="nama" label="Nama" >
@@ -13,7 +14,11 @@
         <span v-else>{{ scope.row.nama }}</span>
       </template>
     </paginated-table-column>
-    <paginated-table-column prop="kode" label="Kode Barang" width="150" />
+    <paginated-table-column prop="kode" label="Kode Barang" width="150">
+      <template #default="scope">
+        <el-tag type="info" effect="light">{{ scope.row.kode }}</el-tag>
+      </template>
+    </paginated-table-column>
     <paginated-table-column prop="kondisi" label="Kondisi Terakhir" />
     <paginated-table-column prop="jumlah" label="Jumlah" width="200">
       <template #default="scope">
@@ -62,11 +67,14 @@
 import { ref } from 'vue'
 import { FormBarang } from '@/services/inventoriServices'
 import DeleteSelectionBar from '@/components/DeleteSelectionBar.vue'
+import type { PropType } from 'vue'
 
-const props = defineProps<{
-  data: any[],
-  showSearch?: Boolean
-}>()
+const props = defineProps({
+  data: { type: Array as PropType<any[]>, default: () => [] },
+  searchFields: { type: Array as PropType<string[]>, default: () => [] },
+  showSearch: { type: Boolean, default: false },
+  showFilter: { type: Boolean, default: false },
+})
 
 const tableData = ref<any[]>(props.data)
 
@@ -121,14 +129,10 @@ const handleCommand = (command: string, row: any) => {
 }
 
 const handleSelectionChange = (val: FormBarang[]) => selectedList.value = val
-// const setTableData = (newData: FormBarang[]) => tableData.value = newData
-// const addToTableData = (newData: FormBarang[]) => newData.forEach(data => tableData.value.push(data))
 const getTableData = () => (Array.from(tableData.value))
 const clearTableData = () => tableData.value.slice(0)
 
 defineExpose({
-  // setTableData,
-  // addToTableData,
   getTableData,
   clearTableData
 })

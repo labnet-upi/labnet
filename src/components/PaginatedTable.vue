@@ -15,7 +15,7 @@
 
       <!-- Input pencarian -->
       <el-input
-        v-model="search"
+        v-model="searchRaw"
         prefix-icon="Search"
         placeholder="Cari..."
         clearable
@@ -104,7 +104,17 @@ const props = defineProps({
   },
 })
 
-const search = ref<string>('')
+const searchRaw = ref('')
+const search = ref('')
+let debounceTimeout: ReturnType<typeof setTimeout>
+
+watch(searchRaw, (val) => {
+  clearTimeout(debounceTimeout)
+  debounceTimeout = setTimeout(() => {
+    search.value = val
+  }, 300) // 300ms debounce
+})
+
 const currentPage = ref<number>(1)
 const pageSize = ref<number>(10)
 const pageSizeOption = [5, 10, 20, 50, 100]
@@ -113,22 +123,47 @@ const sort = ref<any>({ prop: '', order: '' })
 const emit = defineEmits(['filter-click', 'selection-change'])
 const onFilterClick = () => emit('filter-click')
 
+// Filter rekursif dengan struktur tetap
+function filterRecursive(data: any[], searchFields: string[], keyword: string): any[] {
+  return data.map(row => {
+    const children = Array.isArray(row.children)
+      ? filterRecursive(row.children, searchFields, keyword)
+      : []
+
+    const matches = searchFields.some(field =>
+      String(row[field] ?? '').toLowerCase().includes(keyword.toLowerCase())
+    )
+
+    if (matches || children.length) {
+      return { ...row, children }
+    }
+
+    return null
+  }).filter(Boolean)
+}
+
+// Sort rekursif
+function sortRecursive(data: any[], prop: string, order: 'ascending' | 'descending'): any[] {
+  const direction = order === 'ascending' ? 1 : -1
+  return [...data]
+    .sort((a, b) => (a[prop] > b[prop] ? 1 : -1) * direction)
+    .map(row => ({
+      ...row,
+      children: Array.isArray(row.children)
+        ? sortRecursive(row.children, prop, order)
+        : []
+    }))
+}
+
 const filteredData = computed(() => {
   if (!props.searchFields.length || !search.value) return props.data
-  return props.data.filter(row =>
-    props.searchFields.some(field =>
-      String(row[field] ?? '').toLowerCase().includes(search.value.toLowerCase())
-    )
-  )
+  console.log(filterRecursive(props.data, props.searchFields, search.value))
+  return filterRecursive(props.data, props.searchFields, search.value)
 })
 
 const filteredSortedData = computed(() => {
   if (!sort.value.prop || !sort.value.order) return filteredData.value
-  return [...filteredData.value].sort((a, b) => {
-    const prop = sort.value.prop
-    const direction = sort.value.order === 'ascending' ? 1 : -1
-    return (a[prop] > b[prop] ? 1 : -1) * direction
-  })
+  return sortRecursive(filteredData.value, sort.value.prop, sort.value.order)
 })
 
 const paginatedData = computed(() => {

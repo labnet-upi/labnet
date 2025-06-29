@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { FormBarang, opsiKondisiBarang, opsiSatuan } from '@/services/inventoriServices';
 import { reactive, ref } from 'vue';
-import { v4 as uuidv4 } from 'uuid'
+import { ObjectId } from 'bson'
 
 const props = defineProps({
   isSetSection: { type: Boolean, required: true },
@@ -61,7 +61,7 @@ const props = defineProps({
 const emit = defineEmits(['submit', 'ubah-satuan', 'clear'])
 
 const defaultValue = () => ({
-  id: uuidv4(),
+  id: new ObjectId().toHexString(),
   nama: '',
   kode: '',
   kondisi: opsiKondisiBarang[0].value,
