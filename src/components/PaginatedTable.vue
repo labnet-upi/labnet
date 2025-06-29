@@ -20,6 +20,7 @@
         placeholder="Cari..."
         clearable
         class="flex-1"
+        v-if="props.showSearch"
       />
     </div>
 
@@ -32,7 +33,7 @@
         @change="handleSizeChange"
         class="!w-16"
       >
-        <el-option v-for="size in [5, 10, 20, 50, 100]" :key="size" :label="size" :value="size" />
+        <el-option v-for="size in pageSizeOption" :key="size" :label="size" :value="size" />
       </el-select>
       <span>entri</span>
     </div>
@@ -44,6 +45,9 @@
       :data="paginatedData"
       stripe
       class="w-full"
+      :default-expand-all="props.defaultExpandAll"
+      :row-key="props.rowKey"
+      @selection-change="(newSelection: any) => (emit('selection-change', newSelection))"
       @sort-change="handleSortChange"
     >
       <el-table-column
@@ -57,6 +61,8 @@
 
       <slot />
     </el-table>
+
+    <slot name="before-footer"></slot>
 
     <!-- Wrapper Flex -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -81,30 +87,36 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, provide } from 'vue'
-
-const rows = ref([])
-const search = ref('')
-const currentPage = ref(1)
-const searchFields = ref([])
-const pageSize = ref(10)
-const sort = ref({ prop: '', order: '' })
+import type { PropType } from 'vue'
 
 const props = defineProps({
+  data: { type: Array as PropType<any[]>, default: () => [] },
+  searchFields: { type: Array as PropType<string[]>, default: () => [] },
   showIndex: { type: Boolean, default: true },
+  showSearch: { type: Boolean, default: false },
   showFilter: { type: Boolean, default: false },
+  defaultExpandAll: { type: Boolean, default: false },
+  rowKey: {
+    type: [String, Function], // bisa string atau function
+    default: 'id'
+  },
 })
 
-const emit = defineEmits(['filter-click'])
-function onFilterClick() {
-  emit('filter-click')
-}
+const search = ref<string>('')
+const currentPage = ref<number>(1)
+const pageSize = ref<number>(10)
+const pageSizeOption = [5, 10, 20, 50, 100]
+const sort = ref<any>({ prop: '', order: '' })
+
+const emit = defineEmits(['filter-click', 'selection-change'])
+const onFilterClick = () => emit('filter-click')
 
 const filteredData = computed(() => {
-  if (!searchFields.value.length || !search.value) return rows.value
-  return rows.value.filter(row =>
-    searchFields.value.some(field =>
+  if (!props.searchFields.length || !search.value) return props.data
+  return props.data.filter(row =>
+    props.searchFields.some(field =>
       String(row[field] ?? '').toLowerCase().includes(search.value.toLowerCase())
     )
   )
@@ -124,31 +136,15 @@ const paginatedData = computed(() => {
   return filteredSortedData.value.slice(start, start + pageSize.value)
 })
 
-function handlePageChange(page) {
-  currentPage.value = page
-}
-
-function handleSizeChange(size) {
+const handlePageChange = (page: number) => currentPage.value = page
+const handleSizeChange = (size: number) => {
   pageSize.value = size
   currentPage.value = 1
 }
+const handleSortChange = ({ prop, order } : { prop: any, order: any}) => sort.value = { prop, order }
+const getIndex = (index: number) => ((currentPage.value - 1) * pageSize.value + index + 1)
 
-function handleSortChange({ prop, order }) {
-  sort.value = { prop, order }
-}
-
-const getIndex = (index) => {
-  return (currentPage.value - 1) * pageSize.value + index + 1
-}
-
-watch(search, () => {
-  currentPage.value = 1
-})
+watch(search, () => currentPage.value = 1)
 
 provide('elTable', ref(null))
-
-defineExpose({
-  setData: (data) => (rows.value = data),
-  setSearchFields: (fields) => (searchFields.value = fields),
-})
 </script>

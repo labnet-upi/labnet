@@ -26,21 +26,26 @@
     </div>
   </el-card>
 
-  <ListInventori ref="listInventoriRef"></ListInventori>
+  <el-card class="mb-6">
+    <ListBarang ref="listBarangRef" :data="tableData"></ListBarang>
+  </el-card>
+
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import RegisterSection from '@/components/FormInventori/RegisterSection.vue'
+import { defineAsyncComponent, ref } from 'vue'
 import { FormBarang } from '@/services/inventoriServices'
-import GenerateData from '@/components/FormInventori/GenerateData.vue'
-import ListInventori from '@/components/ListInventori.vue'
+import ListBarang from '@/components/ListBarang.vue'
+
+const GenerateData = defineAsyncComponent(() => import('@/components/FormInventori/GenerateData.vue'))
+const RegisterSection = defineAsyncComponent(() => import(/* webpackPrefetch: true */ '@/components/FormInventori/RegisterSection.vue'))
 
 const opsiModeInput = [
   {label: "Generate", value: "generate"},
   {label: "Manual", value: "manual"},
 ]
 const modeInput = ref(opsiModeInput[0].value)
-const listInventoriRef = ref()
-const pushToTableData = (newData: FormBarang[]) => listInventoriRef.value.addToTableData(newData)
+const listBarangRef = ref()
+const tableData = ref<FormBarang[]>([])
+const pushToTableData = (newData: FormBarang[]) => newData.forEach(data => tableData.value.push(data))
 </script>

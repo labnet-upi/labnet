@@ -22,7 +22,7 @@
                   Inventaris
               </template>
 
-              <el-menu-item index="/dashboard/inventaris/daftar">Daftar Inventaris</el-menu-item>
+              <el-menu-item index="/dashboard/inventaris/barang">Barang</el-menu-item>
               <el-menu-item index="/dashboard/inventaris/peminjaman">Peminjaman</el-menu-item>
             </el-sub-menu>
 

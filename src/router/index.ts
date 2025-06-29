@@ -42,7 +42,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: { breadcrumb: 'Inventaris' },
         children: [
           {
-            path: 'daftar',
+            path: 'barang',
             name: 'ListInventaris',
             component: () => import('../views/inventaris/ListInventaris.vue'),
             meta: { breadcrumb: 'List Inventaris' }

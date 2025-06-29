@@ -11,7 +11,10 @@
     <div class="mt-3">
       <paginated-table
         ref="tabelPeroranganRef"
+        :data="dataPerorangan"
         :show-filter="true"
+        :search-fields="['nama', 'nim']"
+        :show-search="true"
         @filter-click="dialogVisible = true"
         v-show="modeDitampilkan == 'perorangan'"
         v-loading="loading">
@@ -41,7 +44,10 @@
     
       <paginated-table
         ref="tabelKelompokRef"
+        :data="dataKelompok"
         :show-filter="true"
+        :search-fields="['nama', 'nim']"
+        :show-search="true"
         @filter-click="dialogVisible = true"
         style="width: 100%"
         v-show="modeDitampilkan == 'kelompok'"
@@ -209,9 +215,6 @@ async function loadData() {
     dataKelompok.value = response.data;
   }
 
-  tabelPeroranganRef.value.setData(dataPerorangan.value)
-  tabelKelompokRef.value.setData(dataKelompok.value)
-
   setTimeout(() => {
     loading.value = false;
   }, 1000);
@@ -231,9 +234,6 @@ function exportCSV() {
 }
 
 onMounted(() => {
-  tabelPeroranganRef.value.setSearchFields(['nama', 'nim'])
-  tabelKelompokRef.value.setSearchFields(['nama', 'nim'])
-
   // Buat daftar tahun 3 tahun kebelakang
   opsiTahun.push(new Date().getFullYear() - 2);
   opsiTahun.push(new Date().getFullYear() - 1);
