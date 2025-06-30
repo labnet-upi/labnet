@@ -41,13 +41,15 @@
 
     <!-- Tabel -->
     <el-table
-      ref="table"
+      ref="tableRef"
       :data="paginatedData"
       stripe
       class="w-full"
       :default-expand-all="props.defaultExpandAll"
       :row-key="props.rowKey"
-      @selection-change="(newSelection: any) => (emit('selection-change', newSelection))"
+      @selection-change="handleSelectionChange"
+      @select="handleSelect"
+      @select-all="handleSelectAll"
       @sort-change="handleSortChange"
     >
       <el-table-column
@@ -88,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, provide } from 'vue'
+import { ref, computed, watch, provide, nextTick } from 'vue'
 import type { PropType } from 'vue'
 
 const props = defineProps({
@@ -104,6 +106,9 @@ const props = defineProps({
   },
 })
 
+const tableRef = ref()
+const selectedRowsFull = ref<any[]>([])
+const selectedKeys = ref<Set<any>>(new Set())
 const searchRaw = ref('')
 const search = ref('')
 let debounceTimeout: ReturnType<typeof setTimeout>
@@ -112,7 +117,8 @@ watch(searchRaw, (val) => {
   clearTimeout(debounceTimeout)
   debounceTimeout = setTimeout(() => {
     search.value = val
-  }, 300) // 300ms debounce
+    currentPage.value = 1
+  }, 500)
 })
 
 const currentPage = ref<number>(1)
@@ -120,7 +126,80 @@ const pageSize = ref<number>(10)
 const pageSizeOption = [5, 10, 20, 50, 100]
 const sort = ref<any>({ prop: '', order: '' })
 
-const emit = defineEmits(['filter-click', 'selection-change'])
+const emit = defineEmits(['filter-click', 'selection-change', 'select', 'select-all'])
+
+const getKey = (item: any) => (
+    typeof props.rowKey === 'function'
+      ? props.rowKey(item)
+      : item[props.rowKey]
+)
+
+let counter = 1
+const handleSelectionChange = (selection: any[]) => {
+  console.log("perubahan", counter++)
+  emit('selection-change', selectedRowsFull.value, selectedKeys.value)
+}
+
+function getAllKeys(rows: any[]): any[] {
+  return rows.flatMap(row => [
+    getKey(row),
+    ...(row.children ? getAllKeys(row.children) : [])
+  ])
+}
+
+const handleSelect = (selection: any[], row: any) => {
+  emit('select', row)
+  const key = getKey(row)
+
+  if (selectedKeys.value.has(key)) {
+    // Hanya hapus row ini
+    selectedKeys.value.delete(key)
+  } else {
+    // Tambahkan row ini
+    selectedKeys.value.add(key)
+  }
+
+  updateSelectedRows()
+}
+
+const handleSelectAll = (selection: any[]) => {
+  const keys = getAllKeys(paginatedData.value)
+
+  if (selection.length) {
+    keys.forEach(k => selectedKeys.value.add(k))
+  } else {
+    keys.forEach(k => selectedKeys.value.delete(k))
+  }
+
+  updateSelectedRows()
+  emit('select-all')
+}
+
+function updateSelectedRows() {
+  // Ambil semua baris dari data asli (termasuk nested) berdasarkan key yang terpilih
+  const flatData = flattenTree(props.data)
+  selectedRowsFull.value = flatData.filter(item =>
+    selectedKeys.value.has(getKey(item))
+  )
+  emit('selection-change', selectedRowsFull.value, selectedKeys.value)
+}
+
+function flattenTree(data: any[]): any[] {
+  const result: any[] = []
+
+  const traverse = (items: any[]) => {
+    for (const item of items) {
+      result.push(item)
+      if (item.children && item.children.length) {
+        traverse(item.children)
+      }
+    }
+  }
+
+  traverse(data)
+  return result
+}
+
 const onFilterClick = () => emit('filter-click')
 
 // Filter rekursif dengan struktur tetap
@@ -157,7 +236,6 @@ function sortRecursive(data: any[], prop: string, order: 'ascending' | 'descendi
 
 const filteredData = computed(() => {
   if (!props.searchFields.length || !search.value) return props.data
-  console.log(filterRecursive(props.data, props.searchFields, search.value))
   return filterRecursive(props.data, props.searchFields, search.value)
 })
 
@@ -179,7 +257,22 @@ const handleSizeChange = (size: number) => {
 const handleSortChange = ({ prop, order } : { prop: any, order: any}) => sort.value = { prop, order }
 const getIndex = (index: number) => ((currentPage.value - 1) * pageSize.value + index + 1)
 
-watch(search, () => currentPage.value = 1)
-
 provide('elTable', ref(null))
+
+// watch(paginatedData, () => {
+//   nextTick(() => {
+//     tableRef.value?.clearSelection()
+
+//     paginatedData.value.forEach(row => {
+//       const allRows = [row, ...(row.children || [])]
+//       allRows.forEach(r => {
+//         const k = getKey(r)
+//         if (selectedKeys.value.has(k)) {
+//           tableRef.value.toggleRowSelection(r, true)
+//         }
+//       })
+//     })
+//   })
+// })
+
 </script>

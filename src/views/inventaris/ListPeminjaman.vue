@@ -1,125 +1,71 @@
 <template>
+  <el-card>
     <div>
-    <div class="flex items-center justify-between pe-4 py-2">
-      <h2 class="text-xl font-semibold">Data Peminjaman</h2>
-
-      <div class="flex gap-2">
-        <el-button type="info" @click="showFilter = !showFilter">
-          <el-icon><Filter /></el-icon>
-        </el-button>
-        <el-button type="primary" :to="{ path: '/dashboard/inventaris/pinjam' }" tag="router-link">Tambah Batch</el-button>
+      <div class="flex items-center justify-between py-2 mb-6">
+        <h2 class="text-xl font-semibold">Data Peminjaman</h2>
+  
+        <div class="flex gap-2">
+          <el-button type="primary" icon="Refresh" plain @click="loadInventori"></el-button>
+          <el-button type="success" icon="Download" plain>Excel</el-button>
+          <el-button type="primary" :to="{ path: '/dashboard/inventaris/pinjam' }" tag="router-link" icon="Plus">Batch</el-button>
+        </div>
       </div>
     </div>
-
-    <transition name="slide-fade">
-      <div class="mb-4 space-y-4" v-show="showFilter">
-        <!-- Baris 1: Input Nama -->
-        <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
-          <div class="flex flex-col">
-            <label class="text-sm mb-1">Nama Peminjam:</label>
-            <input
-              type="text"
-              v-model="filterNama"
-              placeholder="Masukkan nama"
-              class="border border-gray-300 rounded px-2 py-1 text-sm w-58"
-            />
-          </div>
-        </div>
-
-        <!-- Baris 2: Filter Tanggal -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Tanggal Pinjam -->
-          <div class="flex flex-col">
-            <label class="text-sm mb-1">Tanggal Pinjam:</label>
-            <el-date-picker
-              v-model="filterTanggalPinjam"
-              type="daterange"
-              start-placeholder="Mulai"
-              end-placeholder="Selesai"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              size="small"
-              class="w-full"
-            />
-          </div>
-
-          <!-- Tanggal Kembali -->
-          <div class="flex flex-col">
-            <label class="text-sm mb-1">Tanggal Kembali:</label>
-            <el-date-picker
-              v-model="filterTanggalKembali"
-              type="daterange"
-              start-placeholder="Mulai"
-              end-placeholder="Selesai"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              size="small"
-              class="w-full"
-            />
-          </div>
-        </div>
-      </div>
-
-    </transition>
-  </div>
-
-  <div class="overflow-x-auto">
-    <el-table
-      :data="filteredDataPeminjaman"
-      border
-      size="small"
-      class="hover:table-row cursor-pointer"
-      @row-click="handleRowClick"
-    >
-      <el-table-column prop="no" label="No" width="50" />
-      <el-table-column prop="nama" label="Nama Peminjam" width="160" />
-      <el-table-column prop="telepon" label="No. Telepon" width="140" />
-
-      <el-table-column
-        label="Barang"
-        :filters="barangFilters"
-        :filter-method="filterBarang"
-        filter-placement="bottom-end"
-        width="200"
+  
+    <div class="overflow-x-auto">
+      <paginated-table
+        :data="dataPeminjaman"
+        size="small"
+        class="hover:table-row cursor-pointer"
+        @row-click="handleRowClick"
       >
-        <template #default="{ row }">
-          <div>
-            <div class="font-semibold mb-1">{{ row.barang.nama }}</div>
-            <div class="flex flex-wrap gap-1">
-              <el-tag
-                v-for="(nomor, idx) in row.barang.nomorInventaris"
-                :key="idx"
-                type="primary"
-                size="small"
-              >
-                {{ nomor }}
-              </el-tag>
+        <paginated-table-column prop="nama" label="Nama Peminjam" width="160" />
+        <paginated-table-column prop="telepon" label="No. Telepon" width="140" />
+  
+        <paginated-table-column
+          label="Barang"
+          :filters="barangFilters"
+          :filter-method="filterBarang"
+          filter-placement="bottom-end"
+          width="200"
+        >
+          <template #default="{ row }">
+            <div>
+              <div class="flex flex-wrap gap-1">
+                <el-tag
+                  v-for="(nomor, idx) in row.barang.nomorInventaris"
+                  :key="idx"
+                  type="info"
+                  effect="light"
+                  size="small"
+                >
+                  {{ nomor }}
+                </el-tag>
+              </div>
             </div>
-          </div>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="tanggalPinjam" label="Tanggal Pinjam" width="100" />
-      <el-table-column prop="tanggalKembali" label="Tanggal Kembali" width="100" />
-      
-      <el-table-column
-        label="Status"
-        :filters="statusFilters"
-        :filter-method="filterStatus"
-        filter-placement="bottom-end"
-        width="120"
-      >
-        <template #default="{ row }">
-          <el-tag :type="getStatusType(row.status)" size="small">
-            {{ row.status }}
-          </el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="asisten" label="Asisten PJ" width="160" />
-      <el-table-column prop="catatan" label="Catatan" width="250" />
-    </el-table>
-  </div>
+          </template>
+        </paginated-table-column>
+  
+        <paginated-table-column
+          label="Status"
+          :filters="statusFilters"
+          :filter-method="filterStatus"
+          filter-placement="bottom-end"
+          width="120"
+        >
+          <template #default="{ row }">
+            <el-tag :type="getStatusType(row.status)" size="small">
+              {{ row.status }}
+            </el-tag>
+          </template>
+        </paginated-table-column>
+        <paginated-table-column prop="tanggal" label="Tanggal" width="100" />
+  
+        <paginated-table-column prop="asisten" label="Pencatat" width="160" />
+        <paginated-table-column prop="keterangan" label="Keterangan"/>
+      </paginated-table>
+    </div>
+  </el-card>
   
   <el-dialog
     v-model="dialogVisible"
@@ -153,17 +99,9 @@
           </el-checkbox-group>
         </el-form-item>
 
-        <el-form-item label="Tanggal Pinjam">
+        <el-form-item label="Tanggal">
           <el-date-picker
-            v-model="selectedRow.tanggalPinjam"
-            type="date"
-            value-format="YYYY-MM-DD"
-          />
-        </el-form-item>
-
-        <el-form-item label="Tanggal Kembali">
-          <el-date-picker
-            v-model="selectedRow.tanggalKembali"
+            v-model="selectedRow.tanggal"
             type="date"
             value-format="YYYY-MM-DD"
           />
@@ -180,8 +118,8 @@
           <el-input v-model="selectedRow.asisten" />
         </el-form-item>
 
-        <el-form-item label="Catatan" class="col-span-2">
-          <el-input type="textarea" v-model="selectedRow.catatan" rows="3" />
+        <el-form-item label="Keterangan" class="col-span-2">
+          <el-input type="textarea" v-model="selectedRow.keterangan" rows="3" />
         </el-form-item>
       </el-form>
     </div>
@@ -196,8 +134,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-const showFilter = ref(true)
-
 const dataPeminjaman = ref([
   {
     no: 1,
@@ -207,11 +143,10 @@ const dataPeminjaman = ref([
       nama: 'Laptop Lenovo',
       nomorInventaris: ['INV-001', 'INV-002']
     },
-    tanggalPinjam: '2025-06-15',
-    tanggalKembali: '2025-06-20',
+    tanggal: '2025-06-15',
     status: 'Dipinjam',
     asisten: 'Riko Prasetya',
-    catatan: 'Digunakan untuk pelatihan tim IT',
+    keterangan: 'Digunakan untuk pelatihan tim IT',
   },
   {
     no: 2,
@@ -221,11 +156,10 @@ const dataPeminjaman = ref([
       nama: 'Proyektor Epson',
       nomorInventaris: ['INV-010']
     },
-    tanggalPinjam: '2025-06-10',
-    tanggalKembali: '2025-06-12',
+    tanggal: '2025-06-10',
     status: 'Dikembalikan',
     asisten: 'Siti Rahma',
-    catatan: 'Digunakan di aula kantor',
+    keterangan: 'Digunakan di aula kantor',
   }
 ])
 
@@ -240,18 +174,6 @@ function getStatusType(status) {
   }
 }
 
-const barangFilters = computed(() => {
-  const namaBarangSet = new Set(dataPeminjaman.value.map(row => row.barang.nama))
-  return Array.from(namaBarangSet).map(nama => ({
-    text: nama,
-    value: nama
-  }))
-})
-
-function filterBarang(value, row) {
-  return row.barang.nama === value
-}
-
 const statusFilters = [
   { text: 'Dipinjam', value: 'Dipinjam' },
   { text: 'Dikembalikan', value: 'Dikembalikan' },
@@ -261,41 +183,9 @@ function filterStatus(value, row) {
   return row.status === value
 }
 
-const filterTanggalPinjam = ref([])
-const filterTanggalKembali = ref([])
-
-const filteredDataPeminjaman = computed(() => {
-  return dataPeminjaman.value.filter(row => {
-    const pinjamValid = !filterTanggalPinjam.value.length || (
-      row.tanggalPinjam >= filterTanggalPinjam.value[0] &&
-      row.tanggalPinjam <= filterTanggalPinjam.value[1]
-    )
-
-    const kembaliValid = !filterTanggalKembali.value.length || (
-      row.tanggalKembali >= filterTanggalKembali.value[0] &&
-      row.tanggalKembali <= filterTanggalKembali.value[1]
-    )
-
-    return pinjamValid && kembaliValid
-  })
-})
-
 const dialogVisible = ref(false)
 const selectedRow = ref(null)
 const selectedInventaris = ref('')
-
-function handleRowClick(row) {
-  selectedRow.value = JSON.parse(JSON.stringify(row))
-  selectedInventaris.value = [...row.barang.nomorInventaris]
-  dialogVisible.value = true
-}
-
-function addInventaris() {
-  if (newInventaris.value.trim()) {
-    selectedRow.value.barang.nomorInventaris.push(newInventaris.value.trim())
-    newInventaris.value = ''
-  }
-}
 
 function simpanPerubahan() {
   const index = dataPeminjaman.value.findIndex(d => d.no === selectedRow.value.no)
@@ -305,18 +195,3 @@ function simpanPerubahan() {
   dialogVisible.value = false
 }
 </script>
-
-<style scoped>
-::v-deep(.custom-default-btn .el-checkbox-button__inner) {
-  background-color: white !important;
-  border-color: #dcdfe6 !important;
-  color: #606266 !important;
-  box-shadow: none !important;
-}
-
-::v-deep(.custom-default-btn.is-checked .el-checkbox-button__inner) {
-  background-color: #555 !important;
-  border-color: #c0c4cc !important;
-  color: #c0c4cc !important;
-}
-</style>

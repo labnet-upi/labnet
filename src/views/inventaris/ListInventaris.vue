@@ -6,7 +6,8 @@
       <el-button
         type="primary"
         icon="Plus"
-        @click="router.push({name: 'TambahInventaris'})"
+        :to="{name: 'TambahInventaris'}"
+        tag="router-link"
         >Batch
       </el-button>
     </div>
@@ -17,10 +18,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import ListBarang from '@/components/ListBarang.vue'
-import { useRouter } from 'vue-router'
 import { apiServices } from '@/services/apiServices'
 import { FormBarang } from '@/services/inventoriServices'
-const router = useRouter()
 const tableData = ref<FormBarang[]>([])
 const loadInventori = async () => {
   const response = await apiServices.get('/inventaris/barang/')
