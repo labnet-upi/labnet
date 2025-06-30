@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { nextTick, ref, shallowRef } from 'vue'
-import PenilaianTable from '@/components/PenilaianTable.vue'
+import PenilaianTable from './PenilaianTable.vue'
 import { ElNotification, ElLoading, ElMessage } from 'element-plus'
 import { apiServices } from '@/services/apiServices'
 import type { ComponentPublicInstance } from 'vue'

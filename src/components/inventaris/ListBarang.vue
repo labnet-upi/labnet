@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { FormBarang } from '@/services/inventoriServices'
-import DeleteSelectionBar from '@/components/DeleteSelectionBar.vue'
+import DeleteSelectionBar from '../dashboard/DeleteSelectionBar.vue'
 import type { PropType } from 'vue'
 
 const props = defineProps({

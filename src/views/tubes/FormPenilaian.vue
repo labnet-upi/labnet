@@ -104,8 +104,8 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import FormNilaiKelompok from './FormNilaiKelompok.vue'
-import FormNilaiPerorangan from './FormNilaiPerorangan.vue'
+import FormNilaiKelompok from '@/components/tubes/FormNilaiKelompok.vue'
+import FormNilaiPerorangan from '@/components/tubes/FormNilaiPerorangan.vue'
 import { apiServices } from '@/services/apiServices'
 
 const loadingInformasi = ref(false)

@@ -61,7 +61,7 @@
 
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
-import Breadcrumb from '@/components/Breadcrumb.vue'
+import Breadcrumb from '@/components/dashboard/Breadcrumb.vue'
 
 const nama = localStorage.getItem('nama')
 const router = useRouter()

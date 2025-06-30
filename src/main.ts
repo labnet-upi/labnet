@@ -8,8 +8,8 @@ import './assets/tailwind.css'
 
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
-import PaginatedTable from './components/PaginatedTable.vue'
-import PaginatedColumn from './components/PaginatedColumn.vue'
+import PaginatedTable from './components/dashboard/PaginatedTable.vue'
+import PaginatedColumn from './components/dashboard/PaginatedColumn.vue'
 
 const app = createApp(App)
 

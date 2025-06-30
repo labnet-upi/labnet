@@ -1,4 +1,3 @@
-<!-- components/Breadcrumb.vue -->
 <template>
   <el-breadcrumb separator="/">
     <el-breadcrumb-item

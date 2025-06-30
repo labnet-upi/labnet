@@ -58,8 +58,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import ParentGenerateData from '@/components/FormInventori/ParentGenerateData.vue'
-import ChildGenerateData from '@/components/FormInventori/ChildGenerateData.vue'
+import ParentGenerateData from './ParentGenerateData.vue'
+import ChildGenerateData from './ChildGenerateData.vue'
 import { FormBarang } from '@/services/inventoriServices'
 import { ObjectId } from 'bson'
 

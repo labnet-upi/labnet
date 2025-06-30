@@ -16,8 +16,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import ListBarang from '@/components/ListBarang.vue'
+import { ref, onMounted } from 'vue'
+import ListBarang from '@/components/inventaris/ListBarang.vue'
 import { apiServices } from '@/services/apiServices'
 import { FormBarang } from '@/services/inventoriServices'
 const tableData = ref<FormBarang[]>([])

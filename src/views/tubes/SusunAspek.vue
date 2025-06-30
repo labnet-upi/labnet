@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, Ref, nextTick } from 'vue';
-import FormSusunAspek from '@/components/FormSusunAspek.vue';
+import FormSusunAspek from '@/components/tubes/FormSusunAspek.vue';
 import { apiServices } from '@/services/apiServices';
 import { ElLoading, ElNotification } from 'element-plus';
 

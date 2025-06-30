@@ -35,12 +35,12 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, ref } from 'vue'
 import { FormBarang } from '@/services/inventoriServices'
-import ListBarang from '@/components/ListBarang.vue'
+import ListBarang from '@/components/inventaris/ListBarang.vue'
 import { apiServices } from '@/services/apiServices'
 import { ElLoading, ElNotification } from 'element-plus'
 
-const GenerateData = defineAsyncComponent(() => import('@/components/FormInventori/GenerateData.vue'))
-const RegisterSection = defineAsyncComponent(() => import(/* webpackPrefetch: true */ '@/components/FormInventori/RegisterSection.vue'))
+const GenerateData = defineAsyncComponent(() => import('@/components/inventaris/form-inventori/GenerateData.vue'))
+const RegisterSection = defineAsyncComponent(() => import(/* webpackPrefetch: true */ '@/components/inventaris/form-inventori/RegisterSection.vue'))
 
 const opsiModeInput = [
   {label: "Generate", value: "generate"},
