@@ -54,16 +54,16 @@ const routes: Array<RouteRecordRaw> = [
             meta: { breadcrumb: 'Tambah Inventaris' }
           },
           {
-            path: 'peminjaman',
-            name: 'Peminjaman',
-            component: () => import('../views/inventaris/ListPeminjaman.vue'),
-            meta: { breadcrumb: 'Peminjaman' }
+            path: 'sirkulasi-peminjaman',
+            name: 'SirkulasiPeminjaman',
+            component: () => import('../views/inventaris/ListSirkulasiPeminjaman.vue'),
+            meta: { breadcrumb: 'Sirkulasi Peminjaman' }
           },
           {
-            path: 'pinjam',
-            name: 'Pinjam',
-            component: () => import('../views/inventaris/FormPeminjaman.vue'),
-            meta: { breadcrumb: 'Form Peminjaman' }
+            path: 'form-sirkulasi/:status_sirkulasi',
+            name: 'FormSirkulasiPeminjaman',
+            component: () => import('../views/inventaris/FormSirkulasiPeminjaman.vue'),
+            meta: { breadcrumb: 'Form Sirkulasi Peminjaman' }
           }
         ]
       }

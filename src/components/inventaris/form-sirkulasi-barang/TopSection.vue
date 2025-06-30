@@ -1,6 +1,6 @@
 <template>
   <el-form label-position="top" :model="form">
-    <h2 class="mb-3">Penanggung Jawab Barang</h2>
+    <h2 class="mb-3">Penanggung Jawab {{ status_sirkulasi[0].toUpperCase() + status_sirkulasi.slice(1) }} Barang</h2>
     <el-divider />
     <el-row :gutter="12">
       <el-col :span="5">
@@ -56,7 +56,8 @@
 </template>
 <script setup lang="ts">
 const props = defineProps({
-  form: { type: Object, required: true }
+  form: { type: Object, required: true },
+  status_sirkulasi: { type: String, required: true }
 })
 const namaPencatat = localStorage.getItem('nama') || '';
 const notelPencatat = localStorage.getItem('notel') || '-';

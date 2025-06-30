@@ -23,7 +23,7 @@
               </template>
 
               <el-menu-item index="/dashboard/inventaris/barang">Barang</el-menu-item>
-              <el-menu-item index="/dashboard/inventaris/peminjaman">Peminjaman</el-menu-item>
+              <el-menu-item index="/dashboard/inventaris/sirkulasi-peminjaman">Sirkulasi Peminjaman</el-menu-item>
             </el-sub-menu>
 
             <el-menu-item index="/dashboard/pengguna"><el-icon><User /></el-icon>Pengguna</el-menu-item>
