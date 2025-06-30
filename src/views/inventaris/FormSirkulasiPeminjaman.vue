@@ -73,6 +73,7 @@
       </el-form-item>
 
       <div class="flex justify-end">
+        <el-button type="info" icon="ArrowLeft" @click="keHalamanSirkulasiPeminjaman" plain>Kembali</el-button>
         <el-button type="warning" @click="simpan">{{ isPeminjaman ? 'Pinjam' : 'Kembalikan' }} Barang</el-button>
       </div>
     </el-form>
@@ -163,20 +164,30 @@ const loadFormSirkulasi = async (id_formulir: string) => {
   Object.assign(form.value, {...form.value, id_formulir_sebelumnya: response.data.id})
   if (isPeminjaman.value) return;
   else {
+    function mapChildrenWithIdBarangSirkulasi(data: any[], idMap: Record<string, string>, idList: string[]) {
+      return data.map(item => {
+        const newItem = { ...item }
+
+        if (item.children && Array.isArray(item.children)) {
+          newItem.children = mapChildrenWithIdBarangSirkulasi(item.children, idMap, idList)
+        }
+
+        // Jika item.id termasuk dalam data_barang_sirkulasi_ids, tambahkan id_barang_sirkulasi_sebelumnya
+        if (idList.includes(item.id)) {
+          newItem.id_barang_sirkulasi_sebelumnya = idMap[item.id]
+        }
+
+        return newItem
+      })
+    }
     const data_barang_sirkulasi_ids: string[] = response.data.data_barang_sirkulasi.map((e: any) => e.id_barang)
+    const idMap = Object.fromEntries(
+      response.data.data_barang_sirkulasi.map((e: any) => [e.id_barang, e.id])
+    )
+    const mappedData = mapChildrenWithIdBarangSirkulasi(rawTableData.value, idMap, data_barang_sirkulasi_ids)
 
-    // Buat map untuk lookup cepat id_barang_sirkulasi_sebelumnya
-    const idMap = Object.fromEntries( response.data.data_barang_sirkulasi.map((e: any) => [e.id_barang, e.id]) )
-
-    // Filter dan tambahkan id_barang_sirkulasi_sebelumnya
-    const filteredData = rawTableData.value
-      .filter(rawData => data_barang_sirkulasi_ids.includes(rawData.id))
-      .map(rawData => ({
-        ...rawData,
-        id_barang_sirkulasi_sebelumnya: idMap[rawData.id]
-      }))
-
-    Object.assign(tableData.value, filteredData)
+    Object.assign(tableData.value, mappedData)
+    console.log(mappedData)
   }
 }
 
@@ -199,6 +210,7 @@ const reset = async () => {
   initFormBarang(tableData.value, false)
 }
 
+const keHalamanSirkulasiPeminjaman = () => router.push({name:'SirkulasiPeminjaman'})
 const simpan = async () => {
   const loadingInstance = ElLoading.service({
     lock: true,
@@ -214,7 +226,7 @@ const simpan = async () => {
 
   try {
     const response = await apiServices.post('/inventaris/sirkulasi/', request)
-    if(isPeminjaman) await reset()
+    if(isPeminjaman.value) await reset()
     setTimeout(() => {
       loadingInstance.close()
       ElNotification({
@@ -224,7 +236,7 @@ const simpan = async () => {
         position: 'bottom-right',
       })
     }, 500)
-    if(!isPeminjaman) router.push({name:'SirkulasiPeminjaman'})
+    if(!isPeminjaman.value) keHalamanSirkulasiPeminjaman()
   } catch (error) {
     loadingInstance.close()
     ElNotification({
