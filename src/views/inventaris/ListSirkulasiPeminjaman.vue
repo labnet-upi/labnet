@@ -1,8 +1,6 @@
 <template>
   <el-card>
-    <div class="flex items-center justify-between py-2 mb-6">
-      <h2 class="text-xl font-semibold">Sirkulasi Peminjaman</h2>
-
+    <div class="flex items-end justify-end py-2 mb-6">
       <div class="flex gap-2">
         <el-button type="primary" icon="Refresh" plain @click="loadDataFormSirkulasi"></el-button>
         <el-button type="success" icon="Download" plain>Excel</el-button>
@@ -92,8 +90,8 @@
                 <el-dropdown-item disabled>Tidak ada aksi</el-dropdown-item>
               </el-dropdown-menu>
               <el-dropdown-menu v-else>
-                <el-dropdown-item command="retur" class="!text-blue-500 hover:!bg-blue-100" v-if="scope.row.status_sirkulasi == 'Peminjaman'"><el-icon><Right /></el-icon>Retur</el-dropdown-item>
-                <el-dropdown-item command="edit" v-if="scope.row.status_sirkulasi == 'Peminjaman'"><el-icon><Edit /></el-icon>Edit</el-dropdown-item>
+                <el-dropdown-item command="retur" class="!text-blue-500 hover:!bg-blue-100" v-if="scope.row.status_sirkulasi == 'peminjaman'"><el-icon><Right /></el-icon>Retur</el-dropdown-item>
+                <el-dropdown-item command="edit" v-if="scope.row.status_sirkulasi == 'peminjaman'"><el-icon><Edit /></el-icon>Edit</el-dropdown-item>
                 <el-dropdown-item command="hapus" class="!text-red-500 hover:!bg-red-100"><el-icon><Remove /></el-icon>Batalkan</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -102,10 +100,28 @@
       </paginated-table-column>
     </paginated-table>
   </el-card>
+  <el-dialog
+    v-model="deleteConfirmVisible"
+    title="Konfirmasi"
+    width="500"
+    align-center
+  >
+  <p>Penghapusan dapat mengakibatkan inkonsistensi data</p>
+  <span>Yakin hapus data?</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="deleteConfirmVisible = false">Batal</el-button>
+        <el-button type="danger" @click="hapusDataSirkulasi()">
+          Hapus
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { apiServices } from '@/services/apiServices'
+import { ElLoading, ElNotification } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
@@ -114,14 +130,14 @@ const loadDataFormSirkulasi = async () => {
   const response = await apiServices.get('/inventaris/sirkulasi')
   dataFormSirkulasi.value = response.data
 }
-
+const deleteConfirmVisible = ref(false)
 onMounted(() => loadDataFormSirkulasi())
 
 function getStatusType(status: string) {
   switch (status) {
-    case 'Peminjaman':
+    case 'peminjaman':
       return 'danger'
-    case 'Pengembalian':
+    case 'pengembalian':
       return 'success'
     default:
       return 'info'
@@ -129,28 +145,69 @@ function getStatusType(status: string) {
 }
 
 const statusFilters = [
-  { text: 'Peminjaman', value: 'Peminjaman' },
-  { text: 'Pengembalian', value: 'Pengembalian' },
+  { text: 'Peminjaman', value: 'peminjaman' },
+  { text: 'Pengembalian', value: 'pengembalian' },
 ]
+const idFormulirSiapDihapus = ref<string>("")
+const hapusDataSirkulasi = async () => {
+  const loadingInstance = ElLoading.service({
+    lock: true,
+    text: 'Menyimpan...',
+    background: 'rgba(0, 0, 0, 0.5)',
+  })
 
-const handleCommand = (command: string, row: any) => {
-  if (command === 'hapus') {
-    // konfirmasiPenghapus("single")
-  } else if (command === 'edit') {
-    router.push({
-      name: 'FormSirkulasiPeminjaman',
-      params: { status_sirkulasi: 'peminjaman'},
-      query: { id_formulir: row.id }
+  try {
+    const response = await apiServices.delete('/inventaris/sirkulasi?id_formulir='+idFormulirSiapDihapus.value)
+    await loadDataFormSirkulasi()
+    setTimeout(() => {
+      loadingInstance.close()
+      ElNotification({
+        title: 'Sukses',
+        message: 'Data berhasil disimpan!',
+        type: 'success',
+        position: 'bottom-right',
+      })
+    }, 500)
+    deleteConfirmVisible.value = false
+  } catch (error) {
+    loadingInstance.close()
+    ElNotification({
+      title: 'Gagal',
+      message: 'Terjadi kesalahan saat menyimpan data.',
+      type: 'error',
+      position: 'bottom-right',
     })
-  } else if(command === 'retur') {
-    router.push({
-      name: 'FormSirkulasiPeminjaman',
-      params: { status_sirkulasi: 'pengembalian'},
-      query: { id_formulir: row.id }
-    })
+
+    // (Opsional) tampilkan log error untuk debugging
+    console.error('Error saat menyimpan data:', error)
   }
 }
-
+const openWarningPembatalan = (id_formulir: string) => {
+  idFormulirSiapDihapus.value = id_formulir
+  deleteConfirmVisible.value = true
+}
+const routeToPeminjaman = (id: any) => {
+  router.push({
+    name: 'FormSirkulasiPeminjaman',
+    params: { status_sirkulasi: 'peminjaman'},
+    query: { id_formulir: id }
+  })
+}
+const routeToPengembalian = (id: any) => {
+  router.push({
+    name: 'FormSirkulasiPeminjaman',
+    params: { status_sirkulasi: 'pengembalian'},
+    query: { id_formulir: id }
+  })
+}
+const commandHandlers: Record<string, (id: any) => void> = {
+  hapus: openWarningPembatalan,
+  edit: routeToPeminjaman,
+  retur: routeToPengembalian,
+}
+const handleCommand = (command: string, row: any) => {
+  commandHandlers[command]?.(row.id)
+}
 const customMatcher = (row: any, keyword: string) => {
   const lcKeyword = keyword.toLowerCase();
   const flatFields = [
@@ -177,5 +234,9 @@ function parsePhone(notel: unknown): string {
   }
 
   return cleaned;
+}
+
+function then() {
+  throw new Error('Function not implemented.')
 }
 </script>

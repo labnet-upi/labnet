@@ -74,7 +74,7 @@
 
       <div class="flex justify-end">
         <el-button type="info" icon="ArrowLeft" @click="keHalamanSirkulasiPeminjaman" plain>Kembali</el-button>
-        <el-button type="warning" @click="simpan" :disabled="selectedList.length == 0">{{ isPeminjaman() ? 'Pinjam' : 'Kembalikan' }} Barang</el-button>
+        <el-button type="warning" @click="simpan" :disabled="selectedList.length == 0">{{ !isPeminjaman() ? 'Kembalikan' : isPeminjamanBaru() ? 'Pinjam' : 'Simpan Perubahan' }} Barang</el-button>
       </div>
     </el-form>
   </el-card>
@@ -97,7 +97,8 @@ const status_sirkulasi = Array.isArray(route.params.status_sirkulasi)
   ? route.params.status_sirkulasi[0]
   : route.params.status_sirkulasi
 const isPeminjaman = () => status_sirkulasi === 'peminjaman'
-const isNewPeminjaman = () => isPeminjaman() && !id_formulir
+const isPeminjamanBaru = () => isPeminjaman() && !id_formulir
+const isPeminjamanLama = () => isPeminjaman() && id_formulir
 const form = ref({
   nama: '',
   notel: '',
@@ -163,7 +164,7 @@ const loadFormSirkulasi = async () => {
   Object.assign(tableData.value, dataPilihanBarang)
 }
 onMounted(async () => {
-  if(isNewPeminjaman()) await loadInventoriAktif()
+  if(isPeminjamanBaru()) await loadInventoriAktif()
   else await loadFormSirkulasi()
 })
 const reset = async () => {
@@ -171,6 +172,7 @@ const reset = async () => {
   form.value.notel = ''
   form.value.tanggal = dayjs().format('YYYY-MM-DD')
   form.value.keterangan = ''
+  tableData.value.splice(0)
   await loadInventoriAktif()
 }
 const keHalamanSirkulasiPeminjaman = () => router.push({name:'SirkulasiPeminjaman'})
@@ -182,14 +184,25 @@ const simpan = async () => {
   })
 
   const statusSirkulasi = isPeminjaman() ? "peminjaman" : "pengembalian"
+  const id =
+    !isPeminjaman() || isPeminjamanBaru()
+      ? new ObjectId().toHexString()
+      : id_formulir;
+
   const request = {
-    penanggung_jawab: { id: new ObjectId().toHexString(), ...form.value, status_sirkulasi: statusSirkulasi, },
+    penanggung_jawab: {
+      id,
+      ...form.value,
+      status_sirkulasi: statusSirkulasi,
+      ...(id_formulir ? { id_formulir_sebelumnya: id_formulir } : {})
+    },
     barang: selectedList.value,
-  }
+  };
 
   try {
-    const response = await apiServices.post('/inventaris/sirkulasi/', request)
-    if(isPeminjaman()) await reset()
+    const method = isPeminjamanLama() ? 'patch' : 'post'
+    const response = await apiServices[method]('/inventaris/sirkulasi/', request)
+    if(!id_formulir) await reset()
     setTimeout(() => {
       loadingInstance.close()
       ElNotification({
@@ -199,7 +212,7 @@ const simpan = async () => {
         position: 'bottom-right',
       })
     }, 500)
-    if(!isPeminjaman()) keHalamanSirkulasiPeminjaman()
+    if(id_formulir) keHalamanSirkulasiPeminjaman()
   } catch (error) {
     loadingInstance.close()
     ElNotification({
