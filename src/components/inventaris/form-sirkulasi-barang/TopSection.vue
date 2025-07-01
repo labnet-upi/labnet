@@ -1,10 +1,10 @@
 <template>
-  <el-form label-position="top" :model="form">
+  <el-form label-position="top" :model="form" ref="formRef" :rules="rules">
     <h2 class="mb-3">Penanggung Jawab {{ status_sirkulasi[0].toUpperCase() + status_sirkulasi.slice(1) }} Barang</h2>
     <el-divider />
     <el-row :gutter="12">
       <el-col :span="5">
-        <el-form-item label="Nama PJ">
+        <el-form-item label="Nama PJ" props="nama">
           <el-input v-model="form.nama" placeholder="Masukkan nama"></el-input>
         </el-form-item>
       </el-col>
@@ -21,6 +21,7 @@
             placeholder="Pilih tanggal"
             format="DD-MM-YYYY"
             value-format="YYYY-MM-DD"
+            :disabled-date="disabledBeforeToday"
             style="width: 100%"
           ></el-date-picker>
         </el-form-item>
@@ -55,10 +56,16 @@
   </el-form>
 </template>
 <script setup lang="ts">
+import { generateRules } from '@/services/formValidateServices';
+import dayjs from 'dayjs'
+import { ref } from 'vue';
 const props = defineProps({
   form: { type: Object, required: true },
   status_sirkulasi: { type: String, required: true }
 })
 const namaPencatat = localStorage.getItem('nama') || '';
 const notelPencatat = localStorage.getItem('notel') || '-';
+const disabledBeforeToday = (date: Date) => dayjs(date).isBefore(dayjs().startOf('day'))
+const rules = generateRules(props.form, "blur", ["keterangan"])
+const formRef= ref()
 </script>

@@ -1,4 +1,6 @@
-interface FormBarang {
+import { useInventoriStore } from "@/stores/inventoriStores"
+
+export interface FormBarang {
   id: string
   nama: string
   kode: string
@@ -9,7 +11,7 @@ interface FormBarang {
   parentId?: string
 }
 
-const opsiKondisiBarang = [
+export const opsiKondisiBarang = [
     { label: 'Baru', value: 'baru' },
     { label: 'Baik', value: 'baik' },
     { label: 'Rusak Ringan', value: 'rusak_ringan' },
@@ -19,9 +21,9 @@ const opsiKondisiBarang = [
     { label: 'Dihapuskan', value: 'dihapuskan' }
 ]
 
-const opsiSatuan = [
+export const opsiSatuan = [
     { label: 'Buah', value: 'buah' },
     { label: 'Set', value: 'set' },
 ]
 
-export { FormBarang, opsiKondisiBarang, opsiSatuan }
+export { useInventoriStore }

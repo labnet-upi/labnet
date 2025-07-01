@@ -10,7 +10,7 @@
       @simpan="(newData) => pushToTableData(newData)">
     </GenerateData>
     <RegisterSection
-      v-else  
+      v-else 
       @submit="(newData) => pushToTableData([newData])">
     </RegisterSection>
   </el-card>
@@ -34,10 +34,12 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, ref } from 'vue'
-import { FormBarang } from '@/services/inventoriServices'
+import { FormBarang, useInventoriStore } from '@/services/inventoriServices'
 import ListBarang from '@/components/inventaris/ListBarang.vue'
 import { apiServices } from '@/services/apiServices'
 import { ElLoading, ElNotification } from 'element-plus'
+
+const inventoriStore = useInventoriStore()
 
 const GenerateData = defineAsyncComponent(() => import('@/components/inventaris/form-inventori/GenerateData.vue'))
 const RegisterSection = defineAsyncComponent(() => import(/* webpackPrefetch: true */ '@/components/inventaris/form-inventori/RegisterSection.vue'))
@@ -86,5 +88,9 @@ const simpan = async () => {
     console.error('Error saat menyimpan data:', error)
   }
 }
-onMounted(() => { Object.assign(tableData.value, []) })
+
+onMounted(() => {
+  Object.assign(tableData.value, [])
+  inventoriStore.loadSaranIsi()
+})
 </script>

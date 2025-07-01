@@ -1,7 +1,7 @@
 <template>
   <el-card>
     <div class="flex items-center justify-between py-2 mb-6">
-      <h2 class="text-xl font-semibold">Data Peminjaman</h2>
+      <h2 class="text-xl font-semibold">Sirkulasi Peminjaman</h2>
 
       <div class="flex gap-2">
         <el-button type="primary" icon="Refresh" plain @click="loadDataFormSirkulasi"></el-button>
@@ -14,9 +14,21 @@
       :data="dataFormSirkulasi"
       size="small"
       class="hover:table-row cursor-pointer"
+      :show-search="true"
+      :search-fields="['nama', 'notel']"
     >
       <paginated-table-column prop="nama" label="Nama Peminjam"/>
-      <paginated-table-column prop="notel" label="No. Telp."/>
+      <paginated-table-column prop="notel" label="No. Telp.">
+        <template #default="{ row }">
+          <el-link
+            type="success"
+            :href="`https://wa.me/${parsePhone(row.notel)}`"
+            target="_blank"
+          >
+            +{{ parsePhone(row.notel) }}
+          </el-link>
+        </template>
+      </paginated-table-column>
 
       <paginated-table-column
         label="Barang"
@@ -58,13 +70,19 @@
           {{ row.pencatat.nama }}
         </template>
       </paginated-table-column>
-      <paginated-table-column prop="pencatat" label="No. Telp.">
+
+      <paginated-table-column prop="notelPencatat" label="No. Telp.">
         <template #default="{ row }">
-          {{ row.pencatat.notel }}
+          <el-link
+            type="success"
+            :href="`https://wa.me/${parsePhone(row.pencatat.notel)}`"
+            target="_blank"
+          >
+            +{{ parsePhone(row.pencatat.notel) }}
+          </el-link>
         </template>
       </paginated-table-column>
-      <paginated-table-column prop="keterangan" label="Keterangan"/>
-      
+
       <paginated-table-column label="">
         <template #default="scope">
           <el-dropdown @command="(command: string) => handleCommand(command, scope.row)">
@@ -124,5 +142,18 @@ const handleCommand = (command: string, row: any) => {
       query: { id_formulir: row.id }
     })
   }
+}
+
+function parsePhone(notel: unknown): string {
+  if (typeof notel !== 'string' && typeof notel !== 'number') return '';
+
+  const str = String(notel);
+  const cleaned = str.replace(/\D/g, '');
+
+  if (cleaned.startsWith('0')) {
+    return '62' + cleaned.slice(1);
+  }
+
+  return cleaned;
 }
 </script>

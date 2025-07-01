@@ -1,37 +1,35 @@
 <template>
-  <el-form label-position="top" class="mb-4">
-    <register-input
-      :is-set-section="true"
-      :is-plain="showChild"
-      @ubah-satuan="handleUbahSatuanParent"
-      @clear="handleClear"
-      @submit="handleSubmit"
+  <register-input
+    :is-set-section="true"
+    :is-plain="showChild"
+    @ubah-satuan="handleUbahSatuanParent"
+    @clear="handleClear"
+    @submit="handleSubmit"
+    >
+  </register-input>
+  <register-input
+    :is-set-section="false"
+    :is-plain="false"
+    @clear="handleClear"
+    @submit="addPcsData"
+    v-show="showChild"
+    ref="pcsInputRef"
+    class="mt-2">
+  </register-input>
+  
+  <el-row v-if="pcsData.length > 0" class="mt-2">
+    <el-col :span="24">
+      <el-tag
+        v-for="(c, idx) in pcsData"
+        :key="c.id"
+        closable
+        @close="hapusChild(idx)"
+        class="mr-2 mb-2"
       >
-    </register-input>
-    <register-input
-      :is-set-section="false"
-      :is-plain="false"
-      @clear="handleClear"
-      @submit="addPcsData"
-      v-show="showChild"
-      ref="pcsInputRef"
-      class="mt-2">
-    </register-input>
-    
-    <el-row v-if="pcsData.length > 0" class="mt-2">
-      <el-col :span="24">
-        <el-tag
-          v-for="(c, idx) in pcsData"
-          :key="c.id"
-          closable
-          @close="hapusChild(idx)"
-          class="mr-2 mb-2"
-        >
-          {{ c.nama }} - {{ c.kode }} ({{ c.jumlah }} {{ c.satuan }} {{ c.kondisi }})
-        </el-tag>
-      </el-col>
-    </el-row>
-  </el-form>
+        {{ c.nama }} - {{ c.kode }} ({{ c.jumlah }} {{ c.satuan }} {{ c.kondisi }})
+      </el-tag>
+    </el-col>
+  </el-row>
 </template>
 
 <script setup lang="ts">

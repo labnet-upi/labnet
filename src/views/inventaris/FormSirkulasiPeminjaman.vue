@@ -74,7 +74,7 @@
 
       <div class="flex justify-end">
         <el-button type="info" icon="ArrowLeft" @click="keHalamanSirkulasiPeminjaman" plain>Kembali</el-button>
-        <el-button type="warning" @click="simpan">{{ isPeminjaman ? 'Pinjam' : 'Kembalikan' }} Barang</el-button>
+        <el-button type="warning" @click="simpan" :disabled="selectedList.length == 0">{{ isPeminjaman ? 'Pinjam' : 'Kembalikan' }} Barang</el-button>
       </div>
     </el-form>
   </el-card>
@@ -89,6 +89,8 @@ import { ElLoading, ElNotification } from 'element-plus';
 import { ObjectId } from 'bson'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
+import dayjs from 'dayjs'
+
 const route = useRoute()
 const router = useRouter()
 
@@ -102,10 +104,9 @@ const isPeminjaman = computed(() => status_sirkulasi.value === 'peminjaman')
 const form = ref({
   nama: '',
   notel: '',
-  tanggal: new Date(),
+  tanggal: dayjs().format('YYYY-MM-DD'),
   keterangan: ''
 })
-
 const tableData = ref<any[]>([])
 const rawTableData = ref<any[]>([])
 const checkAll = ref(false)
@@ -204,7 +205,7 @@ const reset = async () => {
   form.value.nama = ''
   form.value.nama = ''
   form.value.notel = ''
-  form.value.tanggal = new Date()
+  form.value.tanggal = dayjs().format('YYYY-MM-DD')
   form.value.keterangan = ''
   await loadInventoriAktif()
   initFormBarang(tableData.value, false)

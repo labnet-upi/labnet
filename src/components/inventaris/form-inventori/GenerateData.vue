@@ -1,31 +1,29 @@
 <template>
-  <el-form label-position="top" class="mb-4">
-    <ParentGenerateData
-      @generate="generate"
-      @ubah-satuan="setChildDisableState"
-      @prefix-diubah="setPrefix"
-      ref="parentDataRef">
-    </ParentGenerateData>
-    <ChildGenerateData
-      @submit="addChild"
-      ref="childDataRef"
-      :disable-form="disableChild">
-    </ChildGenerateData>
+  <ParentGenerateData
+    @generate="generate"
+    @ubah-satuan="setChildDisableState"
+    @prefix-diubah="setPrefix"
+    ref="parentDataRef">
+  </ParentGenerateData>
+  <ChildGenerateData
+    @submit="addChild"
+    ref="childDataRef"
+    :disable-form="disableChild">
+  </ChildGenerateData>
 
-    <el-row v-if="pcsData.length > 0" class="mt-2">
-      <el-col :span="24">
-        <el-tag
-          v-for="(c, idx) in pcsData"
-          :key="c.id"
-          closable
-          @close="hapusChild(idx)"
-          class="mr-2 mb-2"
-        >
-          {{ c.namaBarang }} ({{ c.jumlah }} {{ c.satuan }} {{ c.kondisi }})
-        </el-tag>
-      </el-col>
-    </el-row>
-  </el-form>
+  <el-row v-if="pcsData.length > 0" class="mt-2">
+    <el-col :span="24">
+      <el-tag
+        v-for="(c, idx) in pcsData"
+        :key="c.id"
+        closable
+        @close="hapusChild(idx)"
+        class="mr-2 mb-2"
+      >
+        {{ c.namaBarang }} ({{ c.jumlah }} {{ c.satuan }} {{ c.kondisi }})
+      </el-tag>
+    </el-col>
+  </el-row>
 
   <el-dialog
     v-model="dialogVisible"
@@ -75,8 +73,12 @@ const pcsData = ref<any[]>([])
 
 function generate(newData: any) {
   const hasil: FormBarang[] = [];
+  // Hitung digit maksimum berdasarkan angka akhir
+  const maxAngka = newData.angkaAwal + newData.jumlah - 1
+  const digitCount = Math.max(newData.digit, maxAngka.toString().length)
+
   for (let i = 0; i < newData.jumlah; i++) {
-    const angka = newData.angkaAwal + i;
+    const angka = (newData.angkaAwal + i).toString().padStart(digitCount, '0')
     const parentKode = `${newData.prefiksKode}${angka}`
     const children = pcsData.value.map((child) => ({
       id: new ObjectId().toHexString(),
@@ -106,12 +108,16 @@ const simpan = () => {
   emit('simpan', tableData.value)
   parentDataRef.value.resetForm()
   childDataRef.value.resetForm()
+  pcsData.value.splice(0)
   dialogVisible.value = false
-  pcsData.value.slice(0)
 }
 
 const addChild = (newData: any) => pcsData.value.push(newData)
-const setChildDisableState = (status: boolean) => disableChild.value = status
+const setChildDisableState = (status: boolean) => {
+  disableChild.value = status
+  childDataRef.value.resetForm()
+  pcsData.value.splice(0)
+}
 const setPrefix = (prefix: string) => childDataRef.value.setPrefix(prefix)
 const hapusChild = (idx: number) => pcsData.value.splice(idx, 1)
 
