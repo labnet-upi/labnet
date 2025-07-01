@@ -27,14 +27,19 @@
   </el-card>
 
   <el-card class="mb-6">
-    <ListBarang ref="listBarangRef" :data="tableData"></ListBarang>
+    <ListBarang
+      ref="listBarangRef"
+      @hapus="(selectedIds, successCallback) => hapusBarang(() => true, tableData, selectedIds, successCallback)"
+      @submit-perubahan="(edittedData, successCallback) => editBarang(() => true, tableData, edittedData, successCallback)"
+      @submit-salinan-data="(newData, successCallback) => salinBarang(() => true, tableData, newData, successCallback)"
+      :data="tableData"></ListBarang>
   </el-card>
 
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, ref } from 'vue'
-import { FormBarang, useInventoriStore } from '@/services/inventoriServices'
+import { FormBarang, useInventoriStore, hapusBarang, editBarang, salinBarang } from '@/services/inventoriServices'
 import ListBarang from '@/components/inventaris/ListBarang.vue'
 import { apiServices } from '@/services/apiServices'
 import { ElLoading, ElNotification } from 'element-plus'
@@ -88,7 +93,6 @@ const simpan = async () => {
     console.error('Error saat menyimpan data:', error)
   }
 }
-
 onMounted(() => {
   Object.assign(tableData.value, [])
   inventoriStore.loadSaranIsi()

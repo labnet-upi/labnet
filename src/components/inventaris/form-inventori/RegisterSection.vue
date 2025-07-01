@@ -5,16 +5,19 @@
     @ubah-satuan="handleUbahSatuanParent"
     @clear="handleClear"
     @submit="handleSubmit"
-    >
+    ref="parentInputRef"
+    :show-button="showButton">
   </register-input>
   <register-input
+    v-if="showSetSection"
     :is-set-section="false"
     :is-plain="false"
     @clear="handleClear"
     @submit="addPcsData"
     v-show="showChild"
     ref="pcsInputRef"
-    class="mt-2">
+    class="mt-2"
+    :show-button="true">
   </register-input>
   
   <el-row v-if="pcsData.length > 0" class="mt-2">
@@ -35,38 +38,51 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import RegisterInput from './RegisterInput.vue'
-import { FormBarang } from '@/services/inventoriServices'
-
+import { FormBarang, useInventoriStore } from '@/services/inventoriServices'
+const inventoriStore = useInventoriStore()
+const props = defineProps({
+  showButton: { type : Boolean, default: true },
+  showSetSection: { type: Boolean, default: true }
+})
 const emit = defineEmits(['submit'])
+const parentInputRef = ref()
 const pcsInputRef = ref()
 const pcsData = ref<FormBarang[]>([])
 const showChild = ref(false)
 
-const hapusChild = (idx: number) => {
-  pcsData.value.splice(idx, 1)
-}
-
+const hapusChild = (idx: number) => pcsData.value.splice(idx, 1)
 function handleUbahSatuanParent(isSet: boolean) {
   showChild.value = isSet
-
   pcsInputRef.value.handleClear()
 }
-
 function handleClear() {
   if(pcsData.value.length) pcsData.value.splice(0)
 }
-
-function addPcsData(newData: FormBarang) {
-  pcsData.value.push(newData)
-}
-
-function handleSubmit(parentData: FormBarang) {
+const addPcsData = (newData: FormBarang) => pcsData.value.push(newData)
+const getSubmitData = (parentData: FormBarang) => {
   const childData = Array.from(pcsData.value)
-  emit('submit', {
+  return {
     ...parentData,
     children: childData
-  })
-
+  }
+}
+function handleSubmit(parentData: FormBarang) {
+  const submitData = getSubmitData(parentData)
+  emit('submit', submitData)
+  inventoriStore.pushSaranIsi([submitData])
   pcsInputRef.value.handleClear()
 }
+const setForm = (newData: FormBarang) => {
+  parentInputRef.value.setForm(newData)
+  if(newData.children && newData.children.length) {
+    pcsData.value.splice(0, pcsData.value.length, ...newData.children)
+  } else {
+    pcsData.value.splice(0)
+  }
+}
+const triggerSubmit = () => parentInputRef.value.triggerSubmit()
+defineExpose({
+  setForm,
+  triggerSubmit
+})
 </script>

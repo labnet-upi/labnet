@@ -10,7 +10,7 @@
             clearable
             value-key="nama"
             placeholder="Nama Barang"
-            @select="(item: any) => inventoriStore.handleSelectSaranNama(item, form, (newVal: boolean) => emit('ubah-satuan', newVal))"
+            @select="(item: any) => inventoriStore.handleSelectSaranNama(item, form, handleSatuan)"
             @input="isEditted = true"/>
         </el-form-item>
       </el-col>
@@ -25,18 +25,6 @@
             placeholder="Kode Barang" />
         </el-form-item>
       </el-col>
-      <el-col :span="4">
-        <el-form-item :label="props.isSetSection ? 'Kondisi' : ''" prop="kondisi">
-          <el-select v-model="form.kondisi" placeholder="Pilih Kondisi">
-            <el-option
-              v-for="opsi in opsiKondisiBarang"
-              :key="opsi.value"
-              :label="opsi.label"
-              :value="opsi.value"
-            />
-          </el-select>
-        </el-form-item>
-      </el-col>
       <el-col :span="3">
         <el-form-item :label="props.isSetSection ? 'Satuan' : ''" prop="satuan">
           <el-select v-model="form.satuan" placeholder="Pilih Satuan" @change="handleSatuan">
@@ -49,14 +37,26 @@
           </el-select>
         </el-form-item>
       </el-col>
-      <el-col :span="3">
+      <el-col :span="4">
         <el-form-item :label="props.isSetSection ? 'Jumlah' : ''" prop="jumlah">
           <el-input-number v-model="form.jumlah" :disabled="isJumlahDisabled"/>
         </el-form-item>
       </el-col>
+      <el-col :span="3">
+        <el-form-item :label="props.isSetSection ? 'Kondisi' : ''" prop="kondisi">
+          <el-select v-model="form.kondisi" placeholder="Pilih Kondisi">
+            <el-option
+              v-for="opsi in opsiKondisiBarang"
+              :key="opsi.value"
+              :label="opsi.label"
+              :value="opsi.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-col>
       <el-col :span="2">
         <el-form-item :label="props.isSetSection ? '*' : ''">
-          <el-button type="primary" icon="Plus" circle :plain="isPlain" @click="handleSubmit"/>
+          <el-button type="primary" icon="Plus" circle :plain="isPlain" @click="handleSubmit" v-if="showButton"/>
           <el-button type="warning" icon="RefreshRight" circle :plain="isPlain" @click="handleClear" :disabled="!isEditted"/>
         </el-form-item>
       </el-col>
@@ -75,6 +75,7 @@ const inventoriStore = useInventoriStore()
 const props = defineProps({
   isSetSection: { type: Boolean, required: true },
   isPlain: { type: Boolean, required: true },
+  showButton: { type: Boolean, required: true }
 })
 
 const emit = defineEmits(['submit', 'ubah-satuan', 'clear'])
@@ -127,7 +128,18 @@ function handleClear() {
   clearForm()
 }
 
+const setForm = (newData: FormBarang) => {
+  Object.assign(form, newData)
+  handleSatuan()
+}
+
+const triggerSubmit = () => {
+  handleSubmit()
+}
+
 defineExpose({
-  handleClear
+  handleClear,
+  setForm,
+  triggerSubmit
 })
 </script>

@@ -104,6 +104,7 @@ const props = defineProps({
     type: [String, Function], // bisa string atau function
     default: 'id'
   },
+  customMatcher: Function as PropType<(row: any, keyword: string) => boolean>,
 })
 
 const tableRef = ref()
@@ -203,23 +204,51 @@ function flattenTree(data: any[]): any[] {
 const onFilterClick = () => emit('filter-click')
 
 // Filter rekursif dengan struktur tetap
-function filterRecursive(data: any[], searchFields: string[], keyword: string): any[] {
-  return data.map(row => {
-    const children = Array.isArray(row.children)
-      ? filterRecursive(row.children, searchFields, keyword)
-      : []
-
-    const matches = searchFields.some(field =>
-      String(row[field] ?? '').toLowerCase().includes(keyword.toLowerCase())
-    )
-
-    if (matches || children.length) {
-      return { ...row, children }
-    }
-
-    return null
-  }).filter(Boolean)
+// default matcher (jika customMatcher tidak disediakan)
+function defaultMatcher(row: any, keyword: string) {
+  const lowerCaseKeyword = keyword.toLowerCase()
+  return props.searchFields.some(field =>
+    String(row[field] ?? '').toLowerCase().includes(lowerCaseKeyword)
+  );
 }
+
+// ambil matcher dari props satu kali
+const matcher =
+  typeof props.customMatcher === 'function'
+    ? props.customMatcher
+    : defaultMatcher;
+
+function filterRecursive(data: any[], keyword: string): any[] {
+  return data
+    .map(row => {
+      const children = Array.isArray(row.children)
+        ? filterRecursive(row.children, keyword)
+        : [];
+
+      const matches = matcher(row, keyword);
+
+      if (matches || children.length) {
+        return { ...row, children };
+      }
+
+      return null;
+    })
+    .filter((item): item is any => Boolean(item));
+}
+
+const filteredData = computed(() => {
+  const keyword = search.value?.trim() ?? '';
+  const hasKeyword = keyword.length > 0;
+  const hasCustomMatcher = typeof props.customMatcher === 'function';
+  const hasSearchFields = Array.isArray(props.searchFields) && props.searchFields.length > 0;
+  const canSearchExecute = hasCustomMatcher || hasSearchFields
+  if (!hasKeyword || !canSearchExecute) {
+    return props.data;
+  }
+  // Jalankan pencarian
+  return filterRecursive(props.data, keyword);
+});
+
 
 // Sort rekursif
 function sortRecursive(data: any[], prop: string, order: 'ascending' | 'descending'): any[] {
@@ -233,11 +262,6 @@ function sortRecursive(data: any[], prop: string, order: 'ascending' | 'descendi
         : []
     }))
 }
-
-const filteredData = computed(() => {
-  if (!props.searchFields.length || !search.value) return props.data
-  return filterRecursive(props.data, props.searchFields, search.value)
-})
 
 const filteredSortedData = computed(() => {
   if (!sort.value.prop || !sort.value.order) return filteredData.value
@@ -258,21 +282,5 @@ const handleSortChange = ({ prop, order } : { prop: any, order: any}) => sort.va
 const getIndex = (index: number) => ((currentPage.value - 1) * pageSize.value + index + 1)
 
 provide('elTable', ref(null))
-
-// watch(paginatedData, () => {
-//   nextTick(() => {
-//     tableRef.value?.clearSelection()
-
-//     paginatedData.value.forEach(row => {
-//       const allRows = [row, ...(row.children || [])]
-//       allRows.forEach(r => {
-//         const k = getKey(r)
-//         if (selectedKeys.value.has(k)) {
-//           tableRef.value.toggleRowSelection(r, true)
-//         }
-//       })
-//     })
-//   })
-// })
 
 </script>

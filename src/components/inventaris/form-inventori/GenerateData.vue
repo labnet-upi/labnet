@@ -3,6 +3,7 @@
     @generate="generate"
     @ubah-satuan="setChildDisableState"
     @prefix-diubah="setPrefix"
+    :show-button="showButton"
     ref="parentDataRef">
   </ParentGenerateData>
   <ChildGenerateData
@@ -47,7 +48,7 @@
       <div class="dialog-footer">
         <el-button @click="dialogVisible = false">Batal</el-button>
         <el-button type="primary" @click="simpan">
-          Pindahkan Data
+          {{ isSalinSection ? 'Salin' : 'Pindahkan' }} Data
         </el-button>
       </div>
     </template>
@@ -58,9 +59,14 @@
 import { ref } from 'vue'
 import ParentGenerateData from './ParentGenerateData.vue'
 import ChildGenerateData from './ChildGenerateData.vue'
-import { FormBarang } from '@/services/inventoriServices'
+import { FormBarang, splitKode, useInventoriStore } from '@/services/inventoriServices'
 import { ObjectId } from 'bson'
+const inventoriStore = useInventoriStore()
 
+const props = defineProps({
+  showButton: { type: Boolean, default: true },
+  isSalinSection: { type: Boolean, default: false }
+})
 const emit = defineEmits(['simpan'])
 
 const dialogVisible = ref(false)
@@ -106,6 +112,7 @@ function generate(newData: any) {
 
 const simpan = () => {
   emit('simpan', tableData.value)
+  inventoriStore.pushSaranIsi(tableData.value)
   parentDataRef.value.resetForm()
   childDataRef.value.resetForm()
   pcsData.value.splice(0)
@@ -120,5 +127,28 @@ const setChildDisableState = (status: boolean) => {
 }
 const setPrefix = (prefix: string) => childDataRef.value.setPrefix(prefix)
 const hapusChild = (idx: number) => pcsData.value.splice(idx, 1)
-
+const setForm = (newData: FormBarang) => {
+  parentDataRef.value.setForm(newData)
+  if(newData.children && newData.children.length) {
+  const newChildrenData = newData.children.map(child => {
+    const { prefix: prefiksKode, tail: kode, digit } = splitKode(child.kode)
+    return {
+      namaBarang: child.nama,
+      prefiksKode,
+      kode,
+      kodeAktif: false,
+      kondisi: child.kondisi,
+      satuan: child.satuan,
+      jumlah: child.jumlah
+    }})
+    pcsData.value.splice(0, pcsData.value.length, ...newChildrenData)
+  }
+}
+const triggerGenerateData = () => {
+  parentDataRef.value.triggerGenerateData()
+}
+defineExpose({
+  setForm,
+  triggerGenerateData
+})
 </script>

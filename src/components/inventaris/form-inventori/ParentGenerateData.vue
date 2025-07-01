@@ -41,8 +41,8 @@
   
       <el-col :span="6">
         <div class="!flex !items-end !justify-end">
-          <el-button type="warning" icon="RefreshRight" @click="resetForm"/>
-          <el-button type="info" icon="MagicStick" @click="generateData">Generate</el-button>
+          <el-button type="warning" icon="RefreshRight" @click="resetForm">{{ showButton ? '' : 'Reset' }}</el-button>
+          <el-button type="info" icon="MagicStick" @click="generateData" v-if="showButton">Generate</el-button>
         </div>
       </el-col>
     </el-row>
@@ -85,9 +85,12 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { opsiKondisiBarang, opsiSatuan, useInventoriStore } from '@/services/inventoriServices'
+import { opsiKondisiBarang, opsiSatuan, useInventoriStore, getParentGeneratedData, FormBarang } from '@/services/inventoriServices'
 import { generateRules } from '@/services/formValidateServices'
 
+const props = defineProps({
+  showButton: { type: Boolean, required: true }
+})
 const inventoriStore = useInventoriStore()
 const emit = defineEmits(['generate', 'prefix-diubah', 'ubah-satuan'])
 
@@ -111,20 +114,24 @@ const generateData = async () => {
     const newData = Object.assign({}, parentFormData)
     emit('generate', newData)
   } catch (err) {
-    // Validasi gagal
     console.warn('Form tidak valid', err)
   }
 }
 
-function prefiksDiubah() {
-  emit('prefix-diubah', parentFormData.prefiksKode + '-')
+const prefiksDiubah = () => emit('prefix-diubah', parentFormData.prefiksKode + '-')
+const handleSatuan = () => emit('ubah-satuan', parentFormData.satuan === opsiSatuan[0].value)
+const setForm = (formBarang: FormBarang) => {
+  const newData = getParentGeneratedData(formBarang)
+  Object.assign(parentFormData, newData)
+  prefiksDiubah()
+  handleSatuan()
 }
-
-function handleSatuan() {
-  emit('ubah-satuan', parentFormData.satuan === opsiSatuan[0].value)
+const triggerGenerateData = () => {
+  generateData()
 }
-
 defineExpose({
-  resetForm
+  resetForm,
+  setForm,
+  triggerGenerateData
 })
 </script>

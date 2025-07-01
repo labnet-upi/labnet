@@ -1,7 +1,7 @@
 <template>
   <DeleteSelectionBar :selected-length="selectedList.length" @delete="konfirmasiPenghapus('multiple')"></DeleteSelectionBar>
   <paginated-table
-    :data="tableData"
+    :data="props.data"
     style="width: 100%" row-key="id"
     default-expand-all
     :show-search="props.showSearch"
@@ -31,8 +31,8 @@
           <el-button text icon="MoreFilled" />
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="detail"><el-icon><View /></el-icon>Detail</el-dropdown-item>
-              <el-dropdown-item command="salin"><el-icon><CopyDocument /></el-icon>Salin</el-dropdown-item>
+              <el-dropdown-item command="edit"><el-icon><Edit /></el-icon>Edit</el-dropdown-item>
+              <el-dropdown-item command="salin" v-if="!isChild(scope.row)"><el-icon><CopyDocument /></el-icon>Salin</el-dropdown-item>
               <el-dropdown-item command="hapus" class="!text-red-500"><el-icon><Remove /></el-icon>Hapus</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -41,7 +41,7 @@
     </paginated-table-column>
 
     <template #before-footer>
-      <el-empty v-if="tableData.length === 0" description="Belum ada data" class="mt-4" />
+      <el-empty v-if="props.data.length === 0" description="Belum ada data" class="mt-4" />
     </template>
   </paginated-table>
 
@@ -61,13 +61,49 @@
       </div>
     </template>
   </el-dialog>
+
+  <el-dialog
+    v-model="editVisible"
+    title="Edit Data"
+    width="1200"
+    @opened="onEditDialogOpened"
+  >
+    <RegisterSection :show-button="false" ref="editRef" @submit="onSubmitRegisterSection"></RegisterSection>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="editVisible = false">Batal</el-button>
+        <el-button type="warning" @click="editData">
+          Simpan Perubahan
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <el-dialog
+    v-model="salinVisible"
+    title="Salin Data"
+    width="1200"
+    @opened="onSalinDialogOpened"
+  >
+    <GenerateData ref="salinRef" :show-button="false" @simpan="(newData: FormBarang[]) => onSubmitSalinSection(newData)"></GenerateData>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="salinVisible = false">Batal</el-button>
+        <el-button type="info" @click="generateDataSalinan">
+          Generate Data
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { defineAsyncComponent, ref, nextTick } from 'vue'
 import { FormBarang } from '@/services/inventoriServices'
 import DeleteSelectionBar from '../dashboard/DeleteSelectionBar.vue'
 import type { PropType } from 'vue'
+const GenerateData = defineAsyncComponent(() => import(/* webpackPrefetch: true */ '@/components/inventaris/form-inventori/GenerateData.vue'))
+const RegisterSection = defineAsyncComponent(() => import(/* webpackPrefetch: true */ '@/components/inventaris/form-inventori/RegisterSection.vue'))
 
 const props = defineProps({
   data: { type: Array as PropType<any[]>, default: () => [] },
@@ -75,28 +111,17 @@ const props = defineProps({
   showSearch: { type: Boolean, default: false },
   showFilter: { type: Boolean, default: false },
 })
-
-const tableData = ref<any[]>(props.data)
-
+const emit = defineEmits(['hapus', 'submit-perubahan', 'submit-salinan-data'])
+const editRef = ref()
+const salinRef = ref()
 const selectedList = ref<FormBarang[]>([])
 const selectedData = ref<any>()
 const deleteConfirmVisible = ref(false)
+const editVisible = ref(false)
+const salinVisible = ref(false)
 const modeHapus = ref<string>("")
-
-const hapusData = () => {
-  function hapusItemRekursif(list: FormBarang[], selectedIds: Set<string>): FormBarang[] {
-    return list
-      .filter(item => !selectedIds.has(item.id))
-      .map(item => {
-        if (item.children && item.children.length > 0) {
-          item.children = hapusItemRekursif(item.children, selectedIds)
-        }
-        return item
-      })
-  }
-
+const hapusData = async () => {
   let selectedIds: string[] = []
-
   if (modeHapus.value === 'multiple') {
     selectedIds = selectedList.value.map(item => item.id)
     selectedList.value = []
@@ -104,34 +129,51 @@ const hapusData = () => {
     selectedIds = [selectedData.value.id]
     selectedData.value = null
   }
-
   const selectedIdSet = new Set(selectedIds)
-  tableData.value = hapusItemRekursif(tableData.value, selectedIdSet)
-
-  deleteConfirmVisible.value = false
+  emit('hapus', selectedIdSet,
+    (isSuccess: boolean) => deleteConfirmVisible.value = !isSuccess
+  )
 }
-
-const konfirmasiPenghapus = (mode: string) => {
-  modeHapus.value = mode
-  deleteConfirmVisible.value = true
+const konfirmasiPenghapus = (mode: string) => (modeHapus.value = mode, deleteConfirmVisible.value = true)
+const editedRow = ref<any | null>(null)
+const salinRow = ref<any | null>(null)
+const bukaDialogEdit = (row: any) => (editedRow.value = row, editVisible.value = true)
+const bukaDialogSalinData = (row: any) => (salinRow.value = row, salinVisible.value = true)
+const onDialogAction = async (componentRef: any, dataRow: any, callback: Function) => {
+  await nextTick()
+  if (componentRef.value && dataRow.value) callback()
 }
-
-const salinData = (row: any) => {
+const onEditAction = (callback: Function) => onDialogAction(editRef, editedRow, callback)
+const onSalinAction = (callback: Function) => onDialogAction(salinRef, salinRow, callback)
+const onEditDialogOpened = () => onEditAction(() => editRef.value.setForm(editedRow.value))
+const onSalinDialogOpened = () => onSalinAction(() => salinRef.value.setForm(salinRow.value))
+const editData = () => onEditAction(() => editRef.value.triggerSubmit())
+const generateDataSalinan = () => onSalinAction(async () => salinRef.value.triggerGenerateData())
+const onSubmitRegisterSection = (submitData: FormBarang) => {
+  editedRow.value = submitData
+  emit('submit-perubahan', editedRow.value,
+    (isSuccess: boolean) => editVisible.value = !isSuccess
+  )
 }
-
+const onSubmitSalinSection = (submitData: FormBarang[]) => {
+  console.log('submitData')
+  emit('submit-salinan-data', submitData,
+    (isSuccess: boolean) => salinVisible.value = !isSuccess
+  )
+}
+const commandHandlers: Record<string, (row: any) => void> = {
+  hapus: () => konfirmasiPenghapus('single'),
+  salin: bukaDialogSalinData,
+  edit: bukaDialogEdit,
+}
 const handleCommand = (command: string, row: any) => {
   selectedData.value = row
-  if (command === 'hapus') {
-    konfirmasiPenghapus("single")
-  } else if (command === 'salin') {
-    salinData(row)
-  }
+  commandHandlers[command]?.(row)
 }
-
 const handleSelectionChange = (val: FormBarang[]) => selectedList.value = val
-const getTableData = () => (Array.from(tableData.value))
-const clearTableData = () => tableData.value.slice(0)
-
+const getTableData = () => (Array.from(props.data))
+const clearTableData = () => props.data.slice(0)
+const isChild = (row: any): boolean => props.data.some(item => item.children?.some((child: any) => child.id === row.id))
 defineExpose({
   getTableData,
   clearTableData

@@ -15,7 +15,7 @@
       size="small"
       class="hover:table-row cursor-pointer"
       :show-search="true"
-      :search-fields="['nama', 'notel']"
+      :custom-matcher="customMatcher"
     >
       <paginated-table-column prop="nama" label="Nama Peminjam"/>
       <paginated-table-column prop="notel" label="No. Telp.">
@@ -88,9 +88,12 @@
           <el-dropdown @command="(command: string) => handleCommand(command, scope.row)">
             <el-button text icon="MoreFilled" />
             <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="retur" class="!text-blue-500 hover:!bg-blue-100" v-if="scope.row.status_sirkulasi == 'Peminjaman'" :disabled="scope.row.sudah_dikembalikan_semua"><el-icon><Right /></el-icon>Retur</el-dropdown-item>
-                <el-dropdown-item command="edit"><el-icon><Edit /></el-icon>Edit</el-dropdown-item>
+              <el-dropdown-menu v-if="scope.row.sudah_dikembalikan_semua">
+                <el-dropdown-item disabled>Tidak ada aksi</el-dropdown-item>
+              </el-dropdown-menu>
+              <el-dropdown-menu v-else>
+                <el-dropdown-item command="retur" class="!text-blue-500 hover:!bg-blue-100" v-if="scope.row.status_sirkulasi == 'Peminjaman'"><el-icon><Right /></el-icon>Retur</el-dropdown-item>
+                <el-dropdown-item command="edit" v-if="scope.row.status_sirkulasi == 'Peminjaman'"><el-icon><Edit /></el-icon>Edit</el-dropdown-item>
                 <el-dropdown-item command="hapus" class="!text-red-500 hover:!bg-red-100"><el-icon><Remove /></el-icon>Batalkan</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -134,7 +137,11 @@ const handleCommand = (command: string, row: any) => {
   if (command === 'hapus') {
     // konfirmasiPenghapus("single")
   } else if (command === 'edit') {
-    // salinData(row)
+    router.push({
+      name: 'FormSirkulasiPeminjaman',
+      params: { status_sirkulasi: 'peminjaman'},
+      query: { id_formulir: row.id }
+    })
   } else if(command === 'retur') {
     router.push({
       name: 'FormSirkulasiPeminjaman',
@@ -143,6 +150,21 @@ const handleCommand = (command: string, row: any) => {
     })
   }
 }
+
+const customMatcher = (row: any, keyword: string) => {
+  const lcKeyword = keyword.toLowerCase();
+  const flatFields = [
+    row.nama,
+    row.pencatat?.nama,
+  ];
+  const barangFields = (row.data_barang_sirkulasi ?? []).flatMap((barang_sirkulasi: any) => {
+    const barang = barang_sirkulasi?.barang ?? {};
+    return [barang.nama, barang.kode];
+  });
+  return [...flatFields, ...barangFields].some(value =>
+    String(value ?? '').toLowerCase().includes(lcKeyword)
+  );
+};
 
 function parsePhone(notel: unknown): string {
   if (typeof notel !== 'string' && typeof notel !== 'number') return '';

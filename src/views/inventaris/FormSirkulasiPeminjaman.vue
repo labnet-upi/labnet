@@ -23,13 +23,13 @@
         </template>
       </paginated-table-column>
       <paginated-table-column prop="kondisi" label="Kondisi Terakhir" />
-      <paginated-table-column prop="jumlah" label="Maks" width="62" align="center"></paginated-table-column>
-      <paginated-table-column prop="jumlah_terkini" label="Stok" width="60" align="center"></paginated-table-column>
-      <paginated-table-column prop="jumlah_dicatat" label="Jumlah" width="200">
+      <paginated-table-column prop="jumlah" label="Total" width="62" align="center"></paginated-table-column>
+      <paginated-table-column prop="jumlah_terkini" label="Tersedia" width="85" align="center"></paginated-table-column>
+      <paginated-table-column prop="jumlah_maks_dapat_dicatat" label="Jumlah" width="200">
         <template #default="scope">
           <el-input-number
-            :min="isPeminjaman ? 1: 0"
-            :max="isPeminjaman ? scope.row.jumlah_terkini : scope.row.jumlah - scope.row.jumlah_terkini"
+            :min="isPeminjaman() ? 1: 0"
+            :max="scope.row.jumlah_maks_dapat_dicatat"
             v-model="scope.row.jumlah_dicatat">
             <template #suffix>
               {{ scope.row.satuan }}
@@ -74,7 +74,7 @@
 
       <div class="flex justify-end">
         <el-button type="info" icon="ArrowLeft" @click="keHalamanSirkulasiPeminjaman" plain>Kembali</el-button>
-        <el-button type="warning" @click="simpan" :disabled="selectedList.length == 0">{{ isPeminjaman ? 'Pinjam' : 'Kembalikan' }} Barang</el-button>
+        <el-button type="warning" @click="simpan" :disabled="selectedList.length == 0">{{ isPeminjaman() ? 'Pinjam' : 'Kembalikan' }} Barang</el-button>
       </div>
     </el-form>
   </el-card>
@@ -82,7 +82,7 @@
 
 <script setup lang="ts">
 import { apiServices } from '@/services/apiServices';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, toRaw } from 'vue';
 import TopSection from '@/components/inventaris/form-sirkulasi-barang/TopSection.vue';
 import { watch } from 'vue';
 import { ElLoading, ElNotification } from 'element-plus';
@@ -90,17 +90,14 @@ import { ObjectId } from 'bson'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import dayjs from 'dayjs'
-
 const route = useRoute()
 const router = useRouter()
-
-const status_sirkulasi = ref<string>(
-  Array.isArray(route.params.status_sirkulasi)
-    ? route.params.status_sirkulasi[0]
-    : route.params.status_sirkulasi
-)
-const isPeminjaman = computed(() => status_sirkulasi.value === 'peminjaman')
-
+const id_formulir = route.query.id_formulir
+const status_sirkulasi = Array.isArray(route.params.status_sirkulasi)
+  ? route.params.status_sirkulasi[0]
+  : route.params.status_sirkulasi
+const isPeminjaman = () => status_sirkulasi === 'peminjaman'
+const isNewPeminjaman = () => isPeminjaman() && !id_formulir
 const form = ref({
   nama: '',
   notel: '',
@@ -108,7 +105,6 @@ const form = ref({
   keterangan: ''
 })
 const tableData = ref<any[]>([])
-const rawTableData = ref<any[]>([])
 const checkAll = ref(false)
 const isIndeterminate = ref(false)
 const flattenRows = (rows: any[]): any[] => rows.flatMap(row => [row, ...(row.children ? flattenRows(row.children) : [])])
@@ -138,79 +134,45 @@ const selectedList = computed(() => flattenRows(tableData.value.filter((item) =>
 watch(tableData, () => {
   updateCheckState()
 }, { deep: true })
-
 const initFormBarang = (rows: any[], checkedVal: boolean) => {
   rows.forEach(row => {
     row.checked = checkedVal
-    row.jumlah_dicatat = isPeminjaman.value ? row.jumlah_terkini : row.jumlah - row.jumlah_terkini
+    row.jumlah_dicatat = isPeminjaman() ? row.jumlah_terkini : row.jumlah - row.jumlah_terkini
     row.keterangan = ''
+    row.jumlah_maks_dapat_dicatat = row.jumlah_terkini
     if (row.children) initFormBarang(row.children, checkedVal)
   })
 }
-
 const loadInventoriAktif = async () => {
-  const status = isPeminjaman.value ? 'tidak_dipinjam' : 'dipinjam'
+  const status = isPeminjaman() ? 'tidak_dipinjam' : 'dipinjam'
   const response = await apiServices.get(`/inventaris/barang?status=${status}`)
-  if (isPeminjaman.value) {
-    Object.assign(tableData.value, response.data)
-  } else {
-    Object.assign(rawTableData.value, response.data)
-  }
+  const result = response.data
+  initFormBarang(result, !isPeminjaman)
+  Object.assign(tableData.value, result)
 }
-
-const loadFormSirkulasi = async (id_formulir: string) => {
-  const response = await apiServices.get(`/inventaris/sirkulasi/?id_formulir=${id_formulir}`)
-  form.value.nama = response.data.nama
-  form.value.notel = response.data.notel
-  Object.assign(form.value, {...form.value, id_formulir_sebelumnya: response.data.id})
-  if (isPeminjaman.value) return;
-  else {
-    function mapChildrenWithIdBarangSirkulasi(data: any[], idMap: Record<string, string>, idList: string[]) {
-      return data.map(item => {
-        const newItem = { ...item }
-
-        if (item.children && Array.isArray(item.children)) {
-          newItem.children = mapChildrenWithIdBarangSirkulasi(item.children, idMap, idList)
-        }
-
-        // Jika item.id termasuk dalam data_barang_sirkulasi_ids, tambahkan id_barang_sirkulasi_sebelumnya
-        if (idList.includes(item.id)) {
-          newItem.id_barang_sirkulasi_sebelumnya = idMap[item.id]
-        }
-
-        return newItem
-      })
-    }
-    const data_barang_sirkulasi_ids: string[] = response.data.data_barang_sirkulasi.map((e: any) => e.id_barang)
-    const idMap = Object.fromEntries(
-      response.data.data_barang_sirkulasi.map((e: any) => [e.id_barang, e.id])
-    )
-    const mappedData = mapChildrenWithIdBarangSirkulasi(rawTableData.value, idMap, data_barang_sirkulasi_ids)
-
-    Object.assign(tableData.value, mappedData)
-    console.log(mappedData)
-  }
+const loadFormSirkulasi = async () => {
+  const response = await apiServices.get(`/inventaris/sirkulasi/?id_formulir=${id_formulir}&status_sirkulasi=${status_sirkulasi}`)
+  // set form val
+  const informasiSirkulasi = response.data.informasi_sirkulasi
+  form.value.nama = informasiSirkulasi.nama,
+  form.value.notel = informasiSirkulasi.notel
+  form.value.tanggal = informasiSirkulasi.tanggal_pencatatan	
+  form.value.keterangan = informasiSirkulasi.keterangan
+  //  set table data
+  const dataPilihanBarang = response.data.pilihan_barang
+  Object.assign(tableData.value, dataPilihanBarang)
 }
-
 onMounted(async () => {
-  await loadInventoriAktif()
-  const id_formulir = route.query.id_formulir
-  if(id_formulir) {
-    await loadFormSirkulasi(id_formulir as string)
-  }
-  initFormBarang(tableData.value, !isPeminjaman.value)
+  if(isNewPeminjaman()) await loadInventoriAktif()
+  else await loadFormSirkulasi()
 })
-
 const reset = async () => {
-  form.value.nama = ''
   form.value.nama = ''
   form.value.notel = ''
   form.value.tanggal = dayjs().format('YYYY-MM-DD')
   form.value.keterangan = ''
   await loadInventoriAktif()
-  initFormBarang(tableData.value, false)
 }
-
 const keHalamanSirkulasiPeminjaman = () => router.push({name:'SirkulasiPeminjaman'})
 const simpan = async () => {
   const loadingInstance = ElLoading.service({
@@ -219,7 +181,7 @@ const simpan = async () => {
     background: 'rgba(0, 0, 0, 0.5)',
   })
 
-  const statusSirkulasi = isPeminjaman.value ? "Peminjaman" : "Pengembalian"
+  const statusSirkulasi = isPeminjaman() ? "peminjaman" : "pengembalian"
   const request = {
     penanggung_jawab: { id: new ObjectId().toHexString(), ...form.value, status_sirkulasi: statusSirkulasi, },
     barang: selectedList.value,
@@ -227,7 +189,7 @@ const simpan = async () => {
 
   try {
     const response = await apiServices.post('/inventaris/sirkulasi/', request)
-    if(isPeminjaman.value) await reset()
+    if(isPeminjaman()) await reset()
     setTimeout(() => {
       loadingInstance.close()
       ElNotification({
@@ -237,7 +199,7 @@ const simpan = async () => {
         position: 'bottom-right',
       })
     }, 500)
-    if(!isPeminjaman.value) keHalamanSirkulasiPeminjaman()
+    if(!isPeminjaman()) keHalamanSirkulasiPeminjaman()
   } catch (error) {
     loadingInstance.close()
     ElNotification({
