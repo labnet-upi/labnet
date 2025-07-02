@@ -4,17 +4,17 @@
     <el-divider />
     <el-row :gutter="12">
       <el-col :span="5">
-        <el-form-item label="Nama PJ" props="nama">
+        <el-form-item label="Nama PJ" prop="nama">
           <el-input v-model="form.nama" placeholder="Masukkan nama"></el-input>
         </el-form-item>
       </el-col>
       <el-col :span="5">
-        <el-form-item label="No. Telepon PJ">
+        <el-form-item label="No. Telepon PJ" prop="notel">
           <el-input v-model="form.notel" placeholder="Masukkan nomor telepon"></el-input>
         </el-form-item>
       </el-col>
       <el-col :span="5">
-        <el-form-item label="Tanggal Pencatatan">
+        <el-form-item label="Tanggal Pencatatan" prop="tanggal">
           <el-date-picker
             v-model="form.tanggal"
             type="date"
@@ -56,9 +56,9 @@
   </el-form>
 </template>
 <script setup lang="ts">
-import { generateRules } from '@/services/formValidateServices';
+import { generateRules } from '@/services/formValidateServices'
 import dayjs from 'dayjs'
-import { ref } from 'vue';
+import { ref } from 'vue'
 const props = defineProps({
   form: { type: Object, required: true },
   status_sirkulasi: { type: String, required: true }
@@ -68,4 +68,16 @@ const notelPencatat = localStorage.getItem('notel') || '-';
 const disabledBeforeToday = (date: Date) => dayjs(date).isBefore(dayjs().startOf('day'))
 const rules = generateRules(props.form, "blur", ["keterangan"])
 const formRef= ref()
+const triggerSubmit = async () => {
+  try {
+    await formRef.value.validate()
+    return true // validasi sukses
+  } catch (err) {
+    console.warn('Form tidak valid', err)
+    return false // validasi gagal
+  }
+}
+defineExpose({
+  triggerSubmit
+})
 </script>

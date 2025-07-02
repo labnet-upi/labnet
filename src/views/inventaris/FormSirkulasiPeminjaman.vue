@@ -1,6 +1,6 @@
 <template>
   <el-card class="mb-6">
-    <TopSection :form="form" :status_sirkulasi="status_sirkulasi"></TopSection>
+    <TopSection :form="form" :status_sirkulasi="status_sirkulasi" ref="topSectionRef"></TopSection>
   </el-card>
 
   <el-card class="mb-6">
@@ -176,7 +176,10 @@ const reset = async () => {
   await loadInventoriAktif()
 }
 const keHalamanSirkulasiPeminjaman = () => router.push({name:'SirkulasiPeminjaman'})
+const topSectionRef = ref()
 const simpan = async () => {
+  const isValid = await topSectionRef.value.triggerSubmit()
+  if(!isValid) return
   const loadingInstance = ElLoading.service({
     lock: true,
     text: 'Menyimpan...',

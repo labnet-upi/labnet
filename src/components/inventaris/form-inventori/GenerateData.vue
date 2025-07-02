@@ -80,8 +80,8 @@ const pcsData = ref<any[]>([])
 function generate(newData: any) {
   const hasil: FormBarang[] = [];
   // Hitung digit maksimum berdasarkan angka akhir
-  const maxAngka = newData.angkaAwal + newData.jumlah - 1
-  const digitCount = Math.max(newData.digit, maxAngka.toString().length)
+  const maxAngka = newData.angkaAwal + newData.jumlah
+  const digitCount = Math.max(newData.digit, maxAngka.toString().length + 1)
 
   for (let i = 0; i < newData.jumlah; i++) {
     const angka = (newData.angkaAwal + i).toString().padStart(digitCount, '0')
@@ -102,7 +102,7 @@ function generate(newData: any) {
       kode: parentKode,
       kondisi: newData.kondisi,
       satuan: newData.satuan,
-      jumlah: newData.jumlah,
+      jumlah: 1,
       children: children ?? []
     });
   }

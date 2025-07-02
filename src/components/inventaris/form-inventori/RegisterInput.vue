@@ -25,6 +25,11 @@
             placeholder="Kode Barang" />
         </el-form-item>
       </el-col>
+      <el-col :span="4">
+        <el-form-item :label="props.isSetSection ? 'Jumlah' : ''" prop="jumlah">
+          <el-input-number v-model="form.jumlah" :disabled="isJumlahDisabled"/>
+        </el-form-item>
+      </el-col>
       <el-col :span="3">
         <el-form-item :label="props.isSetSection ? 'Satuan' : ''" prop="satuan">
           <el-select v-model="form.satuan" placeholder="Pilih Satuan" @change="handleSatuan">
@@ -35,11 +40,6 @@
               :value="opsi.value"
             />
           </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="4">
-        <el-form-item :label="props.isSetSection ? 'Jumlah' : ''" prop="jumlah">
-          <el-input-number v-model="form.jumlah" :disabled="isJumlahDisabled"/>
         </el-form-item>
       </el-col>
       <el-col :span="3">

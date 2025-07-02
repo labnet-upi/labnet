@@ -29,9 +29,9 @@
   <el-card class="mb-6">
     <ListBarang
       ref="listBarangRef"
-      @hapus="(selectedIds, successCallback) => hapusBarang(() => true, tableData, selectedIds, successCallback)"
-      @submit-perubahan="(edittedData, successCallback) => editBarang(() => true, tableData, edittedData, successCallback)"
-      @submit-salinan-data="(newData, successCallback) => salinBarang(() => true, tableData, newData, successCallback)"
+      @hapus="(selectedIds, successCallback) => hapusBarang(async () => true, tableData, selectedIds, successCallback)"
+      @submit-perubahan="(edittedData, successCallback) => editBarang(async () => true, tableData, edittedData, successCallback)"
+      @submit-salinan-data="(newData, successCallback) => salinBarang(async () => true, tableData, newData, successCallback)"
       :data="tableData"></ListBarang>
   </el-card>
 
@@ -67,10 +67,7 @@ const simpan = async () => {
 
   try {
     const response = await apiServices.post('/inventaris/barang/', tableData.value)
-
-    // Jika berhasil, kosongkan tableData
     reset()
-
     setTimeout(() => {
       loadingInstance.close()
       ElNotification({

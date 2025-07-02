@@ -55,7 +55,7 @@ function filterListFormBarang(list: FormBarang[], selectedIds: Set<string>): For
       return item
     })
 }
-export const hapusBarang = async (precall: Function, data: FormBarang[], selectedIds: Set<string>, successCallback: Function) => {
+export const hapusBarang = async (precall: () => Promise<boolean>, data: FormBarang[], selectedIds: Set<string>, successCallback: Function) => {
   const isSafe = await precall()
   if(!isSafe) {
     successCallback(false)
@@ -75,7 +75,7 @@ function findItemById(list: FormBarang[], id: string): FormBarang | null {
   }
   return null
 }
-export const editBarang = async (precall: Function, data: FormBarang[], edittedData: FormBarang, successCallback: Function) => {
+export const editBarang = async (precall: () => Promise<boolean>, data: FormBarang[], edittedData: FormBarang, successCallback: Function) => {
   const isSafe = await precall()
   if(!isSafe) {
     successCallback(false)
@@ -86,7 +86,7 @@ export const editBarang = async (precall: Function, data: FormBarang[], edittedD
   if(dataFound) Object.assign(dataFound, edittedData)
   successCallback(true)
 }
-export const salinBarang = async (precall: Function, data: FormBarang[], newData: FormBarang[], successCallback: Function) => {
+export const salinBarang = async (precall: () => Promise<boolean>, data: FormBarang[], newData: FormBarang[], successCallback: Function) => {
   const isSafe = await precall()
   if(!isSafe) {
     successCallback(false)

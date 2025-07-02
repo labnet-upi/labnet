@@ -3,7 +3,7 @@
     <div class="flex items-end justify-end py-2 mb-6">
       <div class="flex gap-2">
         <el-button type="primary" icon="Refresh" plain @click="loadDataFormSirkulasi"></el-button>
-        <el-button type="success" icon="Download" plain>Excel</el-button>
+        <el-button type="success" icon="Download" plain @click="exportExcel">Excel</el-button>
         <el-button type="primary" :to="{ name: 'FormSirkulasiPeminjaman', params: { status_sirkulasi: 'peminjaman' } }" tag="router-link" icon="Top">Pinjam Barang</el-button>
       </div>
     </div>
@@ -52,6 +52,7 @@
       <paginated-table-column
         label="Status"
         :filters="statusFilters"
+        :filter-method="filterStatus"
         filter-placement="bottom-end"
         width="120"
       >
@@ -61,7 +62,7 @@
           </el-tag>
         </template>
       </paginated-table-column>
-      <paginated-table-column prop="tanggal_pencatatan" label="Tanggal"/>
+      <paginated-table-column prop="tanggal_pencatatan" label="Tanggal" sortable />
 
       <paginated-table-column prop="pencatat" label="Pencatat">
         <template #default="{ row }">
@@ -120,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { apiServices } from '@/services/apiServices'
+import { apiServices, downloadFile } from '@/services/apiServices'
 import { ElLoading, ElNotification } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -148,6 +149,9 @@ const statusFilters = [
   { text: 'Peminjaman', value: 'peminjaman' },
   { text: 'Pengembalian', value: 'pengembalian' },
 ]
+function filterStatus(value: string, row: any) {
+  return row.status_sirkulasi === value
+}
 const idFormulirSiapDihapus = ref<string>("")
 const hapusDataSirkulasi = async () => {
   const loadingInstance = ElLoading.service({
@@ -163,7 +167,7 @@ const hapusDataSirkulasi = async () => {
       loadingInstance.close()
       ElNotification({
         title: 'Sukses',
-        message: 'Data berhasil disimpan!',
+        message: 'Data berhasil dihapus!',
         type: 'success',
         position: 'bottom-right',
       })
@@ -173,13 +177,13 @@ const hapusDataSirkulasi = async () => {
     loadingInstance.close()
     ElNotification({
       title: 'Gagal',
-      message: 'Terjadi kesalahan saat menyimpan data.',
+      message: 'Terjadi kesalahan saat menghapus data.',
       type: 'error',
       position: 'bottom-right',
     })
 
     // (Opsional) tampilkan log error untuk debugging
-    console.error('Error saat menyimpan data:', error)
+    console.error('Error saat menghapus data:', error)
   }
 }
 const openWarningPembatalan = (id_formulir: string) => {
@@ -236,7 +240,5 @@ function parsePhone(notel: unknown): string {
   return cleaned;
 }
 
-function then() {
-  throw new Error('Function not implemented.')
-}
+const exportExcel = () => downloadFile("inventaris/sirkulasi/laporan")
 </script>
