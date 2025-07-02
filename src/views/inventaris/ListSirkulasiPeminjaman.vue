@@ -2,8 +2,8 @@
   <el-card>
     <div class="flex items-end justify-end py-2 mb-6">
       <div class="flex gap-2">
-        <el-button type="primary" icon="Refresh" plain @click="loadDataFormSirkulasi"></el-button>
-        <el-button type="success" icon="Download" plain @click="exportExcel">Excel</el-button>
+        <el-button type="primary" icon="Refresh" plain @click="loadDataFormSirkulasi" :loading="loadingFormSirkulasi" loading-icon="Refresh"></el-button>
+        <el-button type="success" icon="Download" plain @click="exportExcel" :loading="loadingExportExcel">Excel</el-button>
         <el-button type="primary" :to="{ name: 'FormSirkulasiPeminjaman', params: { status_sirkulasi: 'peminjaman' } }" tag="router-link" icon="Top">Pinjam Barang</el-button>
       </div>
     </div>
@@ -127,9 +127,13 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const dataFormSirkulasi = ref([])
+const loadingFormSirkulasi = ref(false)
 const loadDataFormSirkulasi = async () => {
+  loadingFormSirkulasi.value = true
   const response = await apiServices.get('/inventaris/sirkulasi')
   dataFormSirkulasi.value = response.data
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  loadingFormSirkulasi.value = false
 }
 const deleteConfirmVisible = ref(false)
 onMounted(() => loadDataFormSirkulasi())
@@ -240,5 +244,11 @@ function parsePhone(notel: unknown): string {
   return cleaned;
 }
 
-const exportExcel = () => downloadFile("inventaris/sirkulasi/laporan")
+const loadingExportExcel = ref(false)
+const exportExcel = async () => {
+  loadingExportExcel.value = true
+  await downloadFile("inventaris/sirkulasi/laporan")
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  loadingExportExcel.value = false
+}
 </script>

@@ -1,8 +1,8 @@
 <template>
   <el-card>
     <div class="flex items-end justify-end mb-6">
-      <el-button type="primary" icon="Refresh" plain @click="loadInventori"></el-button>
-      <el-button type="success" icon="Download" plain>Excel</el-button>
+      <el-button type="primary" icon="Refresh" plain @click="loadInventori" :loading="loadingInventori" loading-icon="Refresh"></el-button>
+      <el-button type="success" icon="Download" plain @click="exportExcel" :loading="loadingExport">Excel</el-button>
       <el-button
         type="primary"
         icon="Plus"
@@ -25,13 +25,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ListBarang from '@/components/inventaris/ListBarang.vue'
-import { apiServices } from '@/services/apiServices'
+import { apiServices, downloadFile } from '@/services/apiServices'
 import { FormBarang, hapusBarang, editBarang, salinBarang } from '@/services/inventoriServices'
 import { ElLoading, ElNotification } from 'element-plus'
 const tableData = ref<FormBarang[]>([])
+const loadingInventori = ref(false)
 const loadInventori = async () => {
+  loadingInventori.value = true
   const response = await apiServices.get('/inventaris/barang/')
   Object.assign(tableData.value, response.data)
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  loadingInventori.value = false
 }
 onMounted(() => loadInventori())
 const deleteBarang =  async (listIdBarang: Set<String>) => {
@@ -141,5 +145,12 @@ const putBarang =  async (updatedData: FormBarang) => {
     console.error('Error saat menghapus data:', error)
     return false;
   }
+}
+const loadingExport = ref(false)
+const exportExcel = async () => {
+  loadingExport.value = true
+  await downloadFile("inventaris/barang?format=excel")
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  loadingExport.value = true
 }
 </script>

@@ -21,6 +21,7 @@
         clearable
         class="flex-1"
         v-if="props.showSearch"
+        :loading="true"
       />
     </div>
 
