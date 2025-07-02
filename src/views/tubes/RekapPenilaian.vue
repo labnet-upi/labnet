@@ -4,7 +4,8 @@
       <h2 class="text-xl font-semibold">Penilaian Tubes</h2>
 
       <div class="flex gap-2">
-        <el-button icon="Download" type="primary" @click="exportCSV">Export CSV</el-button>
+        <el-button icon="Refresh" type="primary" @click="loadData" :loading="loading" loading-icon="Refresh"></el-button>
+        <el-button icon="Download" type="info" @click="exportCSV" :loading="loadingExport">Export CSV</el-button>
       </div>
     </div>
 
@@ -168,7 +169,7 @@ const tabelKelompokRef = ref(null)
 const loading = ref(false)
 
 const dialogVisible = ref(false)
-
+const delay = () => new Promise(res => setTimeout(res, 1000));
 function toggleTahun(tahun) {
   if (selectedTahun.value.includes(tahun)) {
     selectedTahun.value = selectedTahun.value.filter(t => t !== tahun)
@@ -220,8 +221,10 @@ async function loadData() {
   }, 1000);
 }
 
-function exportCSV() {
-  downloadFile(
+const loadingExport = ref(false)
+const exportCSV = async () => {
+  loadingExport.value = true
+  await downloadFile(
     apiUrls[modeDipilih.value],
     {
       params: {
@@ -231,6 +234,8 @@ function exportCSV() {
       },
       paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
     });
+  await delay()
+  loadingExport.value = false
 }
 
 onMounted(() => {

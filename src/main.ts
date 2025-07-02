@@ -20,10 +20,7 @@ app.use(pinia)
 app.use(router)
 app.use(ElementPlus)
 
-// Daftarkan semua ikon Element Plus secara global
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
-}
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) app.component(key, component)
 
 app.component('paginated-table', PaginatedTable)
 app.component('paginated-table-column', PaginatedColumn)

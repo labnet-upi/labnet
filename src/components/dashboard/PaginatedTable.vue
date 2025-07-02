@@ -21,7 +21,13 @@
         clearable
         class="flex-1"
         v-if="props.showSearch"
-      />
+      >
+        <template #suffix>
+          <el-icon v-if="loadingSearch" class="is-loading">
+            <loading />
+          </el-icon>
+        </template>
+      </el-input>
     </div>
 
     <!-- Kanan: Dropdown page size -->
@@ -51,6 +57,7 @@
       @select="handleSelect"
       @select-all="handleSelectAll"
       @sort-change="handleSortChange"
+      v-loading="loadingSearch"
     >
       <el-table-column
         v-if="props.showIndex"
@@ -106,7 +113,7 @@ const props = defineProps({
   },
   customMatcher: Function as PropType<(row: any, keyword: string) => boolean>,
 })
-
+const loadingSearch = ref(false)
 const tableRef = ref()
 const selectedRowsFull = ref<any[]>([])
 const selectedKeys = ref<Set<any>>(new Set())
@@ -115,6 +122,7 @@ const search = ref('')
 let debounceTimeout: ReturnType<typeof setTimeout>
 
 watch(searchRaw, (val) => {
+  loadingSearch.value = true
   clearTimeout(debounceTimeout)
   debounceTimeout = setTimeout(() => {
     search.value = val
@@ -270,6 +278,7 @@ const filteredSortedData = computed(() => {
 
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
+  loadingSearch.value = false
   return filteredSortedData.value.slice(start, start + pageSize.value)
 })
 

@@ -1,12 +1,14 @@
 <template>
-  <div class="flex items-center justify-between pe-4 py-2">
-    <h2 class="text-xl font-semibold">Penilaian Perorangan</h2>
-    
-    <div class="flex gap-2">
-      <i v-if="belumDisimpan" class="el-icon-warning">Belum disimpan</i>
-      <el-button type="primary" @click="rekapPenilaian" :disabled="!belumDisimpan">Simpan Nilai</el-button>
+  <el-card class="my-6">
+    <div class="flex items-center justify-between pe-4 py-2">
+      <h2 class="text-xl font-semibold">Penilaian Perorangan</h2>
+      
+      <div class="flex gap-2">
+        <i v-if="belumDisimpan" class="el-icon-warning">Belum disimpan</i>
+        <el-button type="primary" @click="rekapPenilaian" :disabled="!belumDisimpan">Simpan Nilai</el-button>
+      </div>
     </div>
-  </div>
+  </el-card>
   
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4" v-if="kelompokDinilai && kelompokDinilai.anggota && kelompokDinilai.anggota.length > 0">
     <el-card
@@ -20,9 +22,11 @@
       <PenilaianTable :aspek_penilaian="aspekPenilaianPerorangan" :ref="el => tabelPeroranganRef[anggota_index] = el" :tampilkan-nilai-saja="true" @change="jadikanStateDraft"/>
     </el-card>
   </div>
-  <el-empty v-else>
-    <p class="text-center text-gray-500">Tidak ada data penilaian perorangan yang tersedia.</p>
-  </el-empty>
+  <el-card v-else class="my-6">
+    <el-empty>
+      <p class="text-center text-gray-500">Tidak ada data penilaian perorangan yang tersedia.</p>
+    </el-empty>
+  </el-card>
 </template>
 
 <script setup lang="ts">

@@ -2,8 +2,8 @@
   <el-card>
     <div class="flex items-end justify-end py-2 mb-6">
       <div class="flex gap-2">
-        <el-button type="primary" icon="Refresh" plain @click="loadDataFormSirkulasi"></el-button>
-        <el-button type="success" icon="Download" plain @click="exportExcel">Excel</el-button>
+        <el-button type="primary" icon="Refresh" plain @click="loadDataFormSirkulasi" :loading="loadingList" loading-icon="Refresh"></el-button>
+        <el-button type="success" icon="Download" plain @click="exportExcel" :loading="loadingExport">Excel</el-button>
         <el-button type="primary" :to="{ name: 'FormSirkulasiPeminjaman', params: { status_sirkulasi: 'peminjaman' } }" tag="router-link" icon="Top">Pinjam Barang</el-button>
       </div>
     </div>
@@ -14,6 +14,7 @@
       class="hover:table-row cursor-pointer"
       :show-search="true"
       :custom-matcher="customMatcher"
+      v-loading="loadingList"
     >
       <paginated-table-column prop="nama" label="Nama Peminjam"/>
       <paginated-table-column prop="notel" label="No. Telp.">
@@ -125,11 +126,16 @@ import { apiServices, downloadFile } from '@/services/apiServices'
 import { ElLoading, ElNotification } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+const delay = () => new Promise(res => setTimeout(res, 1000));
 const router = useRouter()
 const dataFormSirkulasi = ref([])
+const loadingList = ref(false)
 const loadDataFormSirkulasi = async () => {
+  loadingList.value = true
   const response = await apiServices.get('/inventaris/sirkulasi')
   dataFormSirkulasi.value = response.data
+  await delay()
+  loadingList.value = false
 }
 const deleteConfirmVisible = ref(false)
 onMounted(() => loadDataFormSirkulasi())
@@ -240,5 +246,11 @@ function parsePhone(notel: unknown): string {
   return cleaned;
 }
 
-const exportExcel = () => downloadFile("inventaris/sirkulasi/laporan")
+const loadingExport = ref(false)
+const exportExcel = async() => {
+  loadingExport.value = true
+  await downloadFile("inventaris/sirkulasi/laporan")
+  delay()
+  loadingExport.value = false
+}
 </script>

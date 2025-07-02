@@ -1,8 +1,8 @@
 <template>
   <el-card>
     <div class="flex items-end justify-end mb-6">
-      <el-button type="primary" icon="Refresh" plain @click="loadInventori"></el-button>
-      <el-button type="success" icon="Download" plain>Excel</el-button>
+      <el-button type="primary" icon="Refresh" plain @click="loadInventori" :loading="loadingList" loading-icon="Refresh"></el-button>
+      <el-button type="success" icon="Download" plain @click="exportExcel" :loading="loadingExport">Excel</el-button>
       <el-button
         type="primary"
         icon="Plus"
@@ -11,27 +11,34 @@
         >Batch
       </el-button>
     </div>
-    <ListBarang
-      ref="listBarangRef"
-      @hapus="(selectedIds, successCallback) => hapusBarang(async () => await deleteBarang(selectedIds), tableData, selectedIds, successCallback)"
-      @submit-perubahan="(edittedData, successCallback) => editBarang(async () => await putBarang(edittedData), tableData, edittedData, successCallback)"
-      @submit-salinan-data="(newData, successCallback) => salinBarang(async () => await postBarang(newData), tableData, newData, successCallback)"
-      :data="tableData"
-      :show-search="true"
-      :search-fields="['nama', 'kode']"></ListBarang>
+    <div v-loading="loadingList">
+      <ListBarang
+        ref="listBarangRef"
+        @hapus="(selectedIds, successCallback) => hapusBarang(async () => await deleteBarang(selectedIds), tableData, selectedIds, successCallback)"
+        @submit-perubahan="(edittedData, successCallback) => editBarang(async () => await putBarang(edittedData), tableData, edittedData, successCallback)"
+        @submit-salinan-data="(newData, successCallback) => salinBarang(async () => await postBarang(newData), tableData, newData, successCallback)"
+        :data="tableData"
+        :show-search="true"
+        :search-fields="['nama', 'kode']"></ListBarang>
+    </div>
   </el-card>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ListBarang from '@/components/inventaris/ListBarang.vue'
-import { apiServices } from '@/services/apiServices'
+import { apiServices, downloadFile } from '@/services/apiServices'
 import { FormBarang, hapusBarang, editBarang, salinBarang } from '@/services/inventoriServices'
 import { ElLoading, ElNotification } from 'element-plus'
+const delay = () => new Promise(res => setTimeout(res, 1000));
 const tableData = ref<FormBarang[]>([])
+const loadingList = ref(false)
 const loadInventori = async () => {
+  loadingList.value = true
   const response = await apiServices.get('/inventaris/barang/')
   Object.assign(tableData.value, response.data)
+  await delay()
+  loadingList.value = false
 }
 onMounted(() => loadInventori())
 const deleteBarang =  async (listIdBarang: Set<String>) => {
@@ -141,5 +148,13 @@ const putBarang =  async (updatedData: FormBarang) => {
     console.error('Error saat menghapus data:', error)
     return false;
   }
+}
+
+const loadingExport = ref(false)
+const exportExcel = async() => {
+  loadingExport.value = true
+  await downloadFile("inventaris/barang?format=excel")
+  delay()
+  loadingExport.value = false
 }
 </script>

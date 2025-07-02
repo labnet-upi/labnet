@@ -1,9 +1,8 @@
 <template>
-  <el-container class="layout-container-demo" style="height: 100%">
+  <el-container class="layout-container" style="height: 100%">
     <el-aside width="200px" style="height: 100%;">
       <el-scrollbar>
         <el-menu :default-openeds="['1', '2']" router>
-            <!-- Tubes -->
             <el-sub-menu index="1">
               <template #title>
                   <el-icon><document /></el-icon>
@@ -15,7 +14,6 @@
               <el-menu-item index="/dashboard/tubes/rekap">Rekap</el-menu-item>
             </el-sub-menu>
 
-            <!-- Inventaris -->
             <el-sub-menu index="2">
               <template #title>
                   <el-icon><folder /></el-icon>
@@ -23,6 +21,7 @@
               </template>
 
               <el-menu-item index="/dashboard/inventaris/barang">Barang</el-menu-item>
+              <el-menu-item index="/dashboard/inventaris/sirkulasi-peminjaman">Opname</el-menu-item>
               <el-menu-item index="/dashboard/inventaris/sirkulasi-peminjaman">Sirkulasi Peminjaman</el-menu-item>
             </el-sub-menu>
 
@@ -50,8 +49,8 @@
       </el-header>
 
       <el-main style="overflow-y: auto; height: calc(100vh - 60px);">
-        <Breadcrumb class="my-3"/>
         <el-scrollbar >
+          <Breadcrumb class="my-3"/>
           <router-view/>
         </el-scrollbar>
       </el-main>
@@ -74,26 +73,22 @@ function handleDropdownCommand(command: string) {
     router.push({ name: 'DashboardLogin' })
   }
 }
-
 </script>
 
 <style scoped>
-.layout-container-demo .el-header {
+.layout-container .el-header {
   position: relative;
   background-color: var(--el-color-primary-light-7);
   color: var(--el-text-color-primary);
 }
-.layout-container-demo .el-aside {
+.layout-container .el-aside {
   color: var(--el-text-color-primary);
   background: var(--el-color-primary-light-8);
 }
-.layout-container-demo .el-menu {
+.layout-container .el-menu {
   border-right: none;
 }
-.layout-container-demo .el-main {
-  padding: 0;
-}
-.layout-container-demo .toolbar {
+.layout-container .toolbar {
   display: inline-flex;
   align-items: center;
   justify-content: center;

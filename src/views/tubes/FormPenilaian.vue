@@ -56,9 +56,9 @@
     <FormNilaiKelompok ref="formNilaiKelompok"></FormNilaiKelompok>
   </el-card>
 
-  <el-card class="my-6" v-show="formPernilaianDitampilkan">
+  <div v-show="formPernilaianDitampilkan">
     <FormNilaiPerorangan ref="formNilaiPerorangan" :kelompokDinilai="kelompokDinilai"></FormNilaiPerorangan>
-  </el-card>
+  </div>
 
   <el-dialog
     title="Pilih Kelompok"

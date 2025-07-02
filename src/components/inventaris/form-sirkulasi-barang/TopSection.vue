@@ -21,7 +21,6 @@
             placeholder="Pilih tanggal"
             format="DD-MM-YYYY"
             value-format="YYYY-MM-DD"
-            :disabled-date="disabledBeforeToday"
             style="width: 100%"
           ></el-date-picker>
         </el-form-item>
@@ -57,7 +56,7 @@
 </template>
 <script setup lang="ts">
 import { generateRules } from '@/services/formValidateServices'
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
 import { ref } from 'vue'
 const props = defineProps({
   form: { type: Object, required: true },
@@ -65,7 +64,7 @@ const props = defineProps({
 })
 const namaPencatat = localStorage.getItem('nama') || '';
 const notelPencatat = localStorage.getItem('notel') || '-';
-const disabledBeforeToday = (date: Date) => dayjs(date).isBefore(dayjs().startOf('day'))
+// const disabledBeforeToday = (date: Date) => dayjs(date).isBefore(dayjs().startOf('day'))
 const rules = generateRules(props.form, "blur", ["keterangan"])
 const formRef= ref()
 const triggerSubmit = async () => {
