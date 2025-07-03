@@ -1,0 +1,13 @@
+version: '3'
+services:
+  vue-app:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8081:8080"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env.development
