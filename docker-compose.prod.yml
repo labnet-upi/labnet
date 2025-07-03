@@ -9,3 +9,9 @@ services:
     restart: always
     env_file:
       - .env.production
+    networks:
+      - labnet-upi
+
+networks:
+  labnet-upi:
+    external: true
