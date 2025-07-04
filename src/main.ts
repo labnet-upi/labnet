@@ -1,3 +1,6 @@
+#console.log('Base URL:', process.env.VUE_APP_API_BASE_URL);
+#console.log('Mode:', process.env.NODE_ENV);
+
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'

@@ -33,7 +33,7 @@ const errorMessage = ref('')
 
 async function submitCode(code: string) {
   try {
-    const response = await apiServices.post('http://127.0.0.1:8000/user/login', { nim: code })
+    const response = await apiServices.post('/user/login', { nim: code })
 
     const responseData = response.data
 
